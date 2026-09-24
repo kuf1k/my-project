@@ -1,12 +1,12 @@
-
+# JetBrains IDEs (CLion)
 .idea/
 
-
+# CMake & build folders
 cmake-build-debug/
 cmake-build-release/
 build/
 
-
+# Compiled files
 *.exe
 *.o
 *.obj
