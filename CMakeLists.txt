@@ -8,5 +8,4 @@ include_directories(include)
 add_executable(MainProject src/main.cpp
         src/core/Ingredient.cpp
         src/core/SolidIngredient.cpp
-        src/core/LiquidIngredient.cpp
-        include/core/LiquidIngredient.h)
+        src/core/LiquidIngredient.cpp)
