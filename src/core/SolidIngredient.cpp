@@ -12,3 +12,4 @@ namespace core {
         std::cout << "[Solid] " << name << ": " << amount << getUnit()
         << "(expires: " << expirationDate << " )\n";
     }
+}
