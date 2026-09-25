@@ -5,7 +5,6 @@
 #include <core/LiquidIngredient.h>
 
 int main() {
-
     // First polimorphysm test
     std::vector<std::unique_ptr<core::Ingredient> > ingredients;
 
@@ -14,7 +13,7 @@ int main() {
 
 
     std::cout << "==========NutriMesh==========\n";
-    for (const auto& item : ingredients) {
+    for (const auto &item: ingredients) {
         item->printInfo();
     }
     return 0;
