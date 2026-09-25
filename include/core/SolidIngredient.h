@@ -1,7 +1,6 @@
 #ifndef SOLIDINGREDIENT_H
 #define SOLIDINGREDIENT_H
 #include "Ingredient.h"
-#include <iostream>
 
 namespace core {
     class SolidIngredient : public Ingredient {
