@@ -12,6 +12,6 @@ namespace core {
 
     void LiquidIngredient::printInfo() const {
         std::cout << "[Liquid] " << name << " : " << amount << getUnit()
-                << "(expires : " << expirationDate << ")\n";
+                << " (expires : " << expirationDate << ")\n";
     }
 }
