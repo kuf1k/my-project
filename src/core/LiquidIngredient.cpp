@@ -7,11 +7,11 @@ namespace core {
     }
 
     std::string LiquidIngredient::getUnit() const {
-        return "ml\n";
+        return "ml";
     }
 
     void LiquidIngredient::printInfo() const {
-        std::cout << "[Liquid ]" << name << ": " << amount << getUnit()
-                << "(expires " << expirationDate << ") \n";
+        std::cout << "[Liquid] " << name << " : " << amount << getUnit()
+                << "(expires : " << expirationDate << ")\n";
     }
 }
