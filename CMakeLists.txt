@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(include)
 
 add_executable(MainProject src/main.cpp
-        src/core/Ingredient.cpp)
+        src/core/Ingredient.cpp
+        src/core/SolidIngredient.cpp
+        include/core/SolidIngredient.h)
