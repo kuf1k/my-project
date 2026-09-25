@@ -10,6 +10,6 @@ namespace core {
 
     void SolidIngredient::printInfo() const {
         std::cout << "[Solid] " << name << " : " << amount << getUnit()
-        << " (expires :" << expirationDate << ")\n";
+        << " (expires : " << expirationDate << ")\n";
     }
 }
