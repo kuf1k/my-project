@@ -14,13 +14,38 @@ void displayMenu() {
     std::cout << "4. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
+double readAmount(const std::string& inputText) {
+    double value;
+    while (true) {
+        std::cout << inputText;
+        std::cin >> value;
+
+        if (!std::cin.fail() && value > 0) {
+            return value;
+        }
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input! Please enter a valid non-negative number.\n";
+    }
+}
+
+std::string readDate(const std::string& inputText) {
+    std::string date;
+    while (true) {
+        std::cout << inputText;
+        std::cin >> date;
+        if (core::DateUtils::isValidDate(date)) {
+            return date;
+        }
+        std::cout << "Invalid date format! Please enter YYYY-MM-DD (e.g. 2026-09-30):\n";
+    }
+}
+
 void enterInfo (std::string& name, double& amount, std::string& expirationDate) {
     std::cout << "Enter name: ";
     std::cin >> name;
-    std::cout << "Enter amount (g): ";
-    std::cin >> amount;
-    std::cout << "Enter expiration date (YYYY-MM-DD): ";
-    std::cin >> expirationDate;
+    amount = readAmount("Enter amount: ");
+    expirationDate = readDate("Enter expiration date (YYYY-MM-DD): ");
 }
 
 int main() {
@@ -42,7 +67,6 @@ int main() {
         if (choice == 1) {
             std::string name, expirationDate;
             double amount = 0;
-            std::string currentDate;
 
             enterInfo(name, amount, expirationDate);
 
@@ -53,7 +77,6 @@ int main() {
         else if (choice == 2) {
             std::string name, expirationDate;
             double amount = 0;
-            std::string currentDate;
 
            enterInfo(name, amount, expirationDate);
 
@@ -62,9 +85,7 @@ int main() {
             std::cout << "Liquid ingredient has been successfully added!\n";
         }
         else if (choice == 3) {
-            std::string currentDate;
-            std::cout << "Enter current date (YYYY-MM-DD): ";
-            std::cin >> currentDate;
+            std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.printInventory(currentDate);
         }
         else if (choice == 4) {

@@ -17,11 +17,14 @@ namespace core {
     class DateUtils {
     public:
         static int getDaysUntil(const std::string &expirationDate, const std::string &currentDate) {
+            if (!isValidDate(expirationDate) || !isValidDate(currentDate)) {
+                return -1;
+            }
             auto parseDate = [](const std::string &dateStr) {
-                std::tm tm{};
+                std::tm timeStruct{};
                 std::istringstream streamDate(dateStr);
-                streamDate >> std::get_time(&tm, "%Y-%m-%d");
-                return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+                streamDate >> std::get_time(&timeStruct, "%Y-%m-%d");
+                return std::chrono::system_clock::from_time_t(std::mktime(&timeStruct));
             };
             auto expTime = parseDate(expirationDate);
             auto currTime = parseDate(currentDate);
@@ -49,6 +52,16 @@ namespace core {
                     return "[Expired]";
             }
             return "The status is not avaliable";
+        }
+        static bool isValidDate(const std::string &dateStr) {
+            if (dateStr.length() != 10 || dateStr[4] != '-' || dateStr[7] != '-') {
+                return false;
+            }
+            std::tm timeStruct{};
+            std::istringstream streamDate(dateStr);
+            streamDate >> std::get_time(&timeStruct, "%Y-%m-%d");
+
+            return !streamDate.fail();
         }
     };
 }
