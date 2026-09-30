@@ -22,4 +22,18 @@ namespace core {
             amount = newAmount;
         }
     }
+
+    bool Ingredient::isExpired(const std::string &currentDate) const {
+        if (DateUtils::calculateStatus(expirationDate,currentDate) == FreshnessStatus::Expired) {
+            return true;
+        }
+        return false;
+    }
+
+
+    FreshnessStatus Ingredient::getFreshnessStatus(const std::string &currentDate) const {
+         return DateUtils::calculateStatus(expirationDate,currentDate);
+
+    }
+
 }

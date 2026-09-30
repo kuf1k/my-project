@@ -14,7 +14,7 @@ namespace core {
         Expired
     };
 
-    class Dateutils {
+    class DateUtils {
     public:
         static int getDaysUntil(const std::string &expirationDate, const std::string &currentDate) {
             auto parseDate = [](const std::string &dateStr) {

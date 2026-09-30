@@ -1,5 +1,6 @@
 #ifndef INGREDIENT_H
 #define INGREDIENT_H
+#include "core/DateUtils.h"
 #include <string>
 
 namespace core {
@@ -21,6 +22,10 @@ namespace core {
         std::string getExpirationDate() const;
 
         void setAmount(double newAmount);
+
+        bool isExpired(const std::string &currentDate) const;
+
+        FreshnessStatus getFreshnessStatus(const std::string &currentDate) const;
 
         virtual std::string getUnit() const = 0;
 
