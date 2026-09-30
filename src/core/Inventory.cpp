@@ -1,4 +1,5 @@
 #include "core/Inventory.h"
+#include "core/DateUtils.h"
 #include <iostream>
 
 namespace core {
@@ -8,7 +9,7 @@ namespace core {
         }
     }
 
-    void Inventory::printInventory() const {
+    void Inventory::printInventory(const std::string& currentDate) const {
         std::cout << "\n=== Your Inventory ===\n";
         if (items.empty()) {
             std::cout << " Your Inventory is empty!\n";
@@ -16,6 +17,9 @@ namespace core {
         }
         for (const auto &item: items) {
             item->printInfo();
+
+            FreshnessStatus status = item->getFreshnessStatus(currentDate);
+            std::cout << "Status:" << DateUtils::getStatusLabel(status) << '\n';
         }
     }
 

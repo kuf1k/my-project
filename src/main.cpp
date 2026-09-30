@@ -4,7 +4,6 @@
 #include "core/LiquidIngredient.h"
 #include "core/Inventory.h"
 
-
 void displayMenu() {
     std::cout << "\n=================================\n";
     std::cout << "     NutriMesh - Kitchen Assistant \n";
@@ -14,6 +13,14 @@ void displayMenu() {
     std::cout << "3. View Inventory\n";
     std::cout << "4. Exit\n";
     std::cout << "Choose an option (1-4): ";
+}
+void enterInfo (std::string& name, double& amount, std::string& expirationDate) {
+    std::cout << "Enter name: ";
+    std::cin >> name;
+    std::cout << "Enter amount (g): ";
+    std::cin >> amount;
+    std::cout << "Enter expiration date (YYYY-MM-DD): ";
+    std::cin >> expirationDate;
 }
 
 int main() {
@@ -34,14 +41,10 @@ int main() {
 
         if (choice == 1) {
             std::string name, expirationDate;
-            double amount;
+            double amount = 0;
+            std::string currentDate;
 
-            std::cout << "Enter name: ";
-            std::cin >> name;
-            std::cout << "Enter amount (g): ";
-            std::cin >> amount;
-            std::cout << "Enter expiration date (YYYY-MM-DD): ";
-            std::cin >> expirationDate;
+            enterInfo(name, amount, expirationDate);
 
             auto item = std::make_unique<core::SolidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
@@ -49,21 +52,20 @@ int main() {
         }
         else if (choice == 2) {
             std::string name, expirationDate;
-            double amount;
+            double amount = 0;
+            std::string currentDate;
 
-            std::cout << "Enter name: ";
-            std::cin >> name;
-            std::cout << "Enter amount (ml): ";
-            std::cin >> amount;
-            std::cout << "Enter expiration date (YYYY-MM-DD): ";
-            std::cin >> expirationDate;
+           enterInfo(name, amount, expirationDate);
 
             auto item = std::make_unique<core::LiquidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
             std::cout << "Liquid ingredient has been successfully added!\n";
         }
         else if (choice == 3) {
-            inventory.printInventory();
+            std::string currentDate;
+            std::cout << "Enter current date (YYYY-MM-DD): ";
+            std::cin >> currentDate;
+            inventory.printInventory(currentDate);
         }
         else if (choice == 4) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
