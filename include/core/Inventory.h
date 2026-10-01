@@ -25,6 +25,8 @@ namespace core {
         void findByName(const std::string &query, const std::string &currentDate) const;
 
         void printExpiringSoon(const std::string currentDate) const;
+
+        void printStatistics() const;
     };
 }
 

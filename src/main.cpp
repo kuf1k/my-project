@@ -14,7 +14,8 @@ void displayMenu() {
     std::cout << "4. Search Ingredient by Name\n";
     std::cout << "5. View Expiring Soon Ingredients\n";
     std::cout << "6. Remove Expired Ingredients\n";
-    std::cout << "7. Exit\n";
+    std::cout << "7. View Inventory Statistics\n";
+    std::cout << "8. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
 double readAmount(const std::string& inputText) {
@@ -113,6 +114,9 @@ int main() {
             }
         }
         else if (choice == 7) {
+            inventory.printStatistics();
+        }
+        else if (choice == 8) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         }
