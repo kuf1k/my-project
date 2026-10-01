@@ -16,3 +16,16 @@ TEST(InventoryTest, AddIngredientIncreasesCount) {
     inventory.addIngredient(std::move(milk));
     EXPECT_EQ(inventory.getItemsCount(), 2);
 }
+
+TEST(InventroyTest, RemoveExpiredDeletsOnlyExpiredItems) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Fresh Flour", 500.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Old Milk", 1000.0, "2026-09-01"));
+
+    std::string currentDate = "2026-10-01";
+
+    size_t removed = inventory.removeExpired(currentDate);
+
+    EXPECT_EQ(removed,1);
+    EXPECT_EQ(inventory.getItemsCount(),1);
+}

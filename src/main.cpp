@@ -93,7 +93,7 @@ int main() {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             size_t removed = inventory.removeExpired(currentDate);
             if (removed > 0) {
-                std::cout << "Succesfully removed" << removed << " expired ingredient(s)!\n";
+                std::cout << "Succesfully removed " << removed << " expired ingredient(s)!\n";
             }
             else {
                 std::cout << "No expired ingredients\n";
