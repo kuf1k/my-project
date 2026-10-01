@@ -5,14 +5,16 @@
 #include "core/Inventory.h"
 
 void displayMenu() {
-    std::cout << "\n=================================\n";
+    std::cout << "\n========================================\n";
     std::cout << "     NutriMesh - Kitchen Assistant \n";
-    std::cout << "=================================\n";
+    std::cout << "========================================\n";
     std::cout << "1. Add Solid Ingredient (g)\n";
     std::cout << "2. Add Liquid Ingredient (ml)\n";
     std::cout << "3. View Inventory\n";
-    std::cout << "4. Remove Expired Ingredients\n";
-    std::cout << "5. Exit\n";
+    std::cout << "4. Search Ingredient by Name\n";
+    std::cout << "5. View Expiring Soon Ingredients\n";
+    std::cout << "6. Remove Expired Ingredients\n";
+    std::cout << "7. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
 double readAmount(const std::string& inputText) {
@@ -90,6 +92,17 @@ int main() {
             inventory.printInventory(currentDate);
         }
         else if (choice == 4) {
+            std::string query;
+            std::cout << "Enter ingredient name (or part of it): ";
+            std::cin >> query;
+            std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
+            inventory.findByName(query,currentDate);
+        }
+        else if (choice == 5) {
+            std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
+            inventory.printExpiringSoon(currentDate);
+        }
+        else if (choice == 6) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             size_t removed = inventory.removeExpired(currentDate);
             if (removed > 0) {
@@ -99,7 +112,7 @@ int main() {
                 std::cout << "No expired ingredients\n";
             }
         }
-        else if (choice == 5) {
+        else if (choice == 7) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         }

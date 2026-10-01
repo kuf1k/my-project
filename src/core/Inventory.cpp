@@ -35,4 +35,37 @@ namespace core {
             }));
         return removedCount;
     }
+    void Inventory::findByName(const std::string &query, const std::string &currentDate) const {
+        std::cout << "\n=== Search Results for '" << query << "' ===\n";
+        bool found = false;
+        for (const auto &item: items) {
+
+            if (item->getName().find(query) != std::string::npos) {
+                item->printInfo();
+                FreshnessStatus status = item->getFreshnessStatus(currentDate);
+                std::cout << "Status: " << DateUtils::getStatusLabel(status);
+                found = true;
+            }
+        }
+         if (!found){
+            std::cout << "No ingredients found matching " << query << "\n";
+        }
+    }
+
+    void Inventory::printExpiringSoon(const std::string currentDate) const {
+        std::cout << "\n=== Ingredients Expiring Soon ===\n";
+        bool found = false;
+
+        for (const auto &item: items) {
+            if (item->getFreshnessStatus(currentDate) == FreshnessStatus::ExpiringSoon) {
+                item->printInfo();
+                FreshnessStatus status = item->getFreshnessStatus(currentDate);
+                std::cout << "Status: " << DateUtils::getStatusLabel(status);
+                found = true;
+            }
+        }
+        if (!found) {
+            std::cout << "No ingredients expiring soon!\n";
+        }
+    }
 }

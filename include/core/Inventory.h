@@ -16,12 +16,15 @@ namespace core {
 
         void addIngredient(std::unique_ptr<Ingredient> ingredient);
 
-        void printInventory(const std::string& currentDate) const;
+        void printInventory(const std::string &currentDate) const;
 
         size_t getItemsCount() const;
 
         size_t removeExpired(const std::string &currentDate);
 
+        void findByName(const std::string &query, const std::string &currentDate) const;
+
+        void printExpiringSoon(const std::string currentDate) const;
     };
 }
 
