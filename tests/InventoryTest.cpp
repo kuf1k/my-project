@@ -17,7 +17,7 @@ TEST(InventoryTest, AddIngredientIncreasesCount) {
     EXPECT_EQ(inventory.getItemsCount(), 2);
 }
 
-TEST(InventroyTest, RemoveExpiredDeletsOnlyExpiredItems) {
+TEST(InventoryTest, RemoveExpiredDeletesOnlyExpiredItems) {
     core::Inventory inventory;
     inventory.addIngredient(std::make_unique<core::SolidIngredient>("Fresh Flour", 500.0, "2026-12-31"));
     inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Old Milk", 1000.0, "2026-09-01"));
@@ -28,4 +28,30 @@ TEST(InventroyTest, RemoveExpiredDeletsOnlyExpiredItems) {
 
     EXPECT_EQ(removed,1);
     EXPECT_EQ(inventory.getItemsCount(),1);
+}
+
+TEST(InventoryTest, FindByNameReturnsMatchingItems) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Wheat Flour",500.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Whole Milk", 1000.0, "2026-10-15"));
+
+   testing::internal::CaptureStdout();
+    inventory.findByName("Flour","2026-10-01");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("Wheat Flour"), std::string::npos);
+    EXPECT_EQ(output.find("Whole Milk"), std::string::npos);
+}
+
+TEST(InventoryTest, PrintExpiringSoonShowsOnlyExpiringItems) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Expiring Milk", 1000.0, "2026-10-01"));
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Fresh Flour", 500.0, "2026-12-31"));
+
+    testing::internal::CaptureStdout();
+    inventory.printExpiringSoon("2026-10-01");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("Expiring Milk"), std::string::npos);
+    EXPECT_EQ(output.find("Fresh Flour"), std::string::npos);
 }
