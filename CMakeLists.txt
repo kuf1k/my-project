@@ -35,6 +35,7 @@ add_executable(UnitTests
         src/core/LiquidIngredient.cpp
         src/core/Inventory.cpp
         tests/InventoryTest.cpp
+        tests/DateUtilsTest.cpp
 )
 
 # Link GoogleTest main entry point library

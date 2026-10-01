@@ -14,5 +14,5 @@ TEST(InventoryTest, AddIngredientIncreasesCount) {
     inventory.addIngredient(std::move(flour));
     auto milk = std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-10-15");
     inventory.addIngredient(std::move(milk));
-    EXPECT_GE(inventory.getItemsCount(), 2);
+    EXPECT_EQ(inventory.getItemsCount(), 2);
 }
