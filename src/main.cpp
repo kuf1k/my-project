@@ -11,7 +11,8 @@ void displayMenu() {
     std::cout << "1. Add Solid Ingredient (g)\n";
     std::cout << "2. Add Liquid Ingredient (ml)\n";
     std::cout << "3. View Inventory\n";
-    std::cout << "4. Exit\n";
+    std::cout << "4. Remove Expired Ingredients\n";
+    std::cout << "5. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
 double readAmount(const std::string& inputText) {
@@ -89,6 +90,16 @@ int main() {
             inventory.printInventory(currentDate);
         }
         else if (choice == 4) {
+            std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
+            size_t removed = inventory.removeExpired(currentDate);
+            if (removed > 0) {
+                std::cout << "Succesfully removed" << removed << " expired ingredient(s)!\n";
+            }
+            else {
+                std::cout << "No expired ingredients\n";
+            }
+        }
+        else if (choice == 5) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         }

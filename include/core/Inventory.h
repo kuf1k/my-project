@@ -19,6 +19,9 @@ namespace core {
         void printInventory(const std::string& currentDate) const;
 
         size_t getItemsCount() const;
+
+        size_t removeExpired(const std::string &currentDate);
+
     };
 }
 

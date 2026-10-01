@@ -1,6 +1,7 @@
 #include "core/Inventory.h"
 #include "core/DateUtils.h"
 #include <iostream>
+#include <vector>
 
 namespace core {
     void Inventory::addIngredient(std::unique_ptr<Ingredient> ingredient) {
@@ -25,5 +26,13 @@ namespace core {
 
     size_t Inventory::getItemsCount() const {
         return items.size();
+    }
+
+    size_t Inventory::removeExpired(const std::string &currentDate) {
+            size_t removedCount = (std::erase_if(items, [&](const std::unique_ptr<Ingredient> &item) {
+             return item->getFreshnessStatus(currentDate) == FreshnessStatus::Expired;
+
+            }));
+        return removedCount;
     }
 }
