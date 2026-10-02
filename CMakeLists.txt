@@ -38,6 +38,7 @@ add_executable(UnitTests
         tests/DateUtilsTest.cpp
         src/core/Recipe.cpp
         include/core/Recipe.h
+        tests/RecipeTest.cpp
 )
 
 # Link GoogleTest main entry point library

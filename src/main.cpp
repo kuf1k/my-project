@@ -18,7 +18,8 @@ void displayMenu() {
     std::cout << "8. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
-double readAmount(const std::string& inputText) {
+
+double readAmount(const std::string &inputText) {
     double value;
     while (true) {
         std::cout << inputText;
@@ -33,7 +34,7 @@ double readAmount(const std::string& inputText) {
     }
 }
 
-std::string readDate(const std::string& inputText) {
+std::string readDate(const std::string &inputText) {
     std::string date;
     while (true) {
         std::cout << inputText;
@@ -45,7 +46,7 @@ std::string readDate(const std::string& inputText) {
     }
 }
 
-void enterInfo (std::string& name, double& amount, std::string& expirationDate) {
+void enterInfo(std::string &name, double &amount, std::string &expirationDate) {
     std::cout << "Enter name: ";
     std::cin >> name;
     amount = readAmount("Enter amount: ");
@@ -77,50 +78,41 @@ int main() {
             auto item = std::make_unique<core::SolidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
             std::cout << "Solid ingredient has been successfully added!\n";
-        }
-        else if (choice == 2) {
+        } else if (choice == 2) {
             std::string name, expirationDate;
             double amount = 0;
 
-           enterInfo(name, amount, expirationDate);
+            enterInfo(name, amount, expirationDate);
 
             auto item = std::make_unique<core::LiquidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
             std::cout << "Liquid ingredient has been successfully added!\n";
-        }
-        else if (choice == 3) {
+        } else if (choice == 3) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.printInventory(currentDate);
-        }
-        else if (choice == 4) {
+        } else if (choice == 4) {
             std::string query;
             std::cout << "Enter ingredient name (or part of it): ";
             std::cin >> query;
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
-            inventory.findByName(query,currentDate);
-        }
-        else if (choice == 5) {
+            inventory.findByName(query, currentDate);
+        } else if (choice == 5) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.printExpiringSoon(currentDate);
-        }
-        else if (choice == 6) {
+        } else if (choice == 6) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             size_t removed = inventory.removeExpired(currentDate);
             if (removed > 0) {
                 std::cout << "Succesfully removed " << removed << " expired ingredient(s)!\n";
-            }
-            else {
+            } else {
                 std::cout << "No expired ingredients\n";
             }
-        }
-        else if (choice == 7) {
+        } else if (choice == 7) {
             inventory.printStatistics();
-        }
-        else if (choice == 8) {
+        } else if (choice == 8) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
-        }
-        else {
+        } else {
             std::cout << "Invalid option! Please choose between 1 and 4.\n";
         }
     }

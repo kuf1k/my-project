@@ -69,5 +69,4 @@ TEST(InventoryTest, PrintStatisticsCalculatesCorrectly) {
     EXPECT_NE(output.find("Total Ingredients: 3"), std::string::npos);
     EXPECT_NE(output.find("Solid Ingredients: 2 (Total Weight: 700 g)"), std::string::npos);
     EXPECT_NE(output.find("Liquid Ingredients: 1 (Total Volume: 1000 ml)"), std::string::npos);
-
 }
