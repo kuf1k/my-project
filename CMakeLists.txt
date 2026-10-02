@@ -47,7 +47,8 @@ add_executable(UnitTests
         src/core/RecipeRepository.cpp
         tests/RecipeRepositoryTest.cpp
         src/core/InventoryExporter.cpp
-        src/core/FileExporter.cpp)
+        src/core/FileExporter.cpp
+        tests/FileExporterTest.cpp)
 
 # Link GoogleTest main entry point library
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main)

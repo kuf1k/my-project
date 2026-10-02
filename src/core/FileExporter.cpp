@@ -1,8 +1,10 @@
 #include "core/FileExporter.h"
 #include <fstream>
+
 namespace core {
     FileExporter::FileExporter(std::string title, std::string filePath)
-        : InventoryExporter(std::move(title)), filePath(std::move(filePath)) {}
+        : InventoryExporter(std::move(title)), filePath(std::move(filePath)) {
+    }
 
     bool FileExporter::exportData(const Inventory &inventory, const std::string &currentDate) {
         std::ofstream outFile(filePath);

@@ -5,6 +5,7 @@
 namespace core {
     class FileExporter : public InventoryExporter {
         std::string filePath;
+
     public:
         FileExporter(std::string title, std::string filePath);
 
