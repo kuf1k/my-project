@@ -11,7 +11,9 @@ add_executable(MainProject src/main.cpp
         src/core/SolidIngredient.cpp
         src/core/LiquidIngredient.cpp
         src/core/Inventory.cpp
-        src/core/Recipe.cpp)
+        src/core/Recipe.cpp
+        src/core/RecipeMatcher.cpp
+        include/core/RecipeMatcher.h)
 
 # --- GoogleTest Framework Setup ---
 enable_testing()
@@ -37,9 +39,9 @@ add_executable(UnitTests
         tests/InventoryTest.cpp
         tests/DateUtilsTest.cpp
         src/core/Recipe.cpp
-        include/core/Recipe.h
         tests/RecipeTest.cpp
-)
+        src/core/RecipeMatcher.cpp
+        include/core/RecipeMatcher.h)
 
 # Link GoogleTest main entry point library
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main)
