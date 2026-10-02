@@ -5,6 +5,8 @@
 #include "core/Inventory.h"
 #include "core/Recipe.h"
 #include "core/RecipeMatcher.h"
+#include "core/DataFilter.h"
+#include "core/FileExporter.h"
 
 void displayMenu() {
     std::cout << "\n========================================\n";
@@ -18,8 +20,9 @@ void displayMenu() {
     std::cout << "6. Remove Expired Ingredients\n";
     std::cout << "7. View Inventory Statistics\n";
     std::cout << "8. Check Recipe Availability\n";
-    std::cout << "9. Exit\n";
-    std::cout << "Choose an option (1-4): ";
+    std::cout << "9. Export Inventory Report to File\n";
+    std::cout << "10. Exit\n";
+    std::cout << "Choose an option (1-10): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -59,6 +62,7 @@ void enterInfo(std::string &name, double &amount, std::string &expirationDate) {
 int main() {
     core::Inventory inventory;
     bool running = true;
+    std::vector<core::Recipe> recipes;
 
     // Test recipe
     core::Recipe pancakes("Pancakes");
@@ -117,17 +121,26 @@ int main() {
             }
         } else if (choice == 7) {
             inventory.printStatistics();
-        }
-        else if (choice == 8) {
-            core::RecipeMatcher::checkRecipeAvailability(pancakes,inventory);
+        } else if (choice == 8) {
+            core::RecipeMatcher::checkRecipeAvailability(pancakes, inventory);
         }
         else if (choice == 9) {
+            std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
+
+            core::FileExporter exporter("NutriMesh Inventory Report", "inventory_report.txt");
+
+            if (exporter.exportData(inventory, currentDate)) {
+                std::cout << "Successfully exported inventory report to 'inventory_report.txt'!\n";
+            } else {
+                std::cout << "Failed to export inventory report.\n";
+            }
+        }
+        else if (choice == 10) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
             std::cout << "Invalid option! Please choose between 1 and 4.\n";
         }
     }
-
     return 0;
 }

@@ -23,6 +23,5 @@ TEST(DataFilterTest, ContainsCheck) {
     bool hasLargeNumber = core::DataFilter<int>::contains(numbers, [](int n) {
         return n > 35;
     });
-
     EXPECT_TRUE(hasLargeNumber);
 }
