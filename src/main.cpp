@@ -21,7 +21,8 @@ void displayMenu() {
     std::cout << "7. View Inventory Statistics\n";
     std::cout << "8. Check Recipe Availability\n";
     std::cout << "9. Export Inventory Report to File\n";
-    std::cout << "10. Exit\n";
+    std::cout << "10. Filter Recipes by Max Calories \n";
+    std::cout << "11. Exit\n";
     std::cout << "Choose an option (1-10): ";
 }
 
@@ -57,6 +58,14 @@ void enterInfo(std::string &name, double &amount, std::string &expirationDate) {
     std::cin >> name;
     amount = readAmount("Enter amount: ");
     expirationDate = readDate("Enter expiration date (YYYY-MM-DD): ");
+}
+
+void runExport(core::InventoryExporter& exporter, const core::Inventory& inventory, const std::string& date) {
+    if (exporter.exportData(inventory, date)) {
+        std::cout << "Successfully exported report: " << exporter.getReportTitle() << "!\n";
+    } else {
+        std::cout << "Failed to export report.\n";
+    }
 }
 
 int main() {
@@ -127,15 +136,27 @@ int main() {
         else if (choice == 9) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
 
-            core::FileExporter exporter("NutriMesh Inventory Report", "inventory_report.txt");
+            core::FileExporter fileExporter("NutriMesh Inventory Report", "inventory_report.txt");
 
-            if (exporter.exportData(inventory, currentDate)) {
-                std::cout << "Successfully exported inventory report to 'inventory_report.txt'!\n";
-            } else {
-                std::cout << "Failed to export inventory report.\n";
-            }
+            runExport(fileExporter, inventory, currentDate);
         }
         else if (choice == 10) {
+            double maxCalories = readAmount("Enter maximum calorie limit: ");
+
+            auto filteredRecipes = core::DataFilter<core::Recipe>::filterBy(recipes, [maxCalories](const core::Recipe &recipe) {
+                return recipe.getCalories() <= maxCalories;
+            });
+
+            if (filteredRecipes.empty()) {
+                std::cout << "No recipes found under " << maxCalories << " kcal.\n";
+            } else {
+                std::cout << "\n=== Recipes under " << maxCalories << " kcal ===\n";
+                for (const auto &recipe : filteredRecipes) {
+                    std::cout << "- " << recipe.getTitle() << " (" << recipe.getCalories() << " kcal)\n";
+                }
+            }
+        }
+        else if (choice == 11) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
