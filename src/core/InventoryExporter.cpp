@@ -1,4 +1,4 @@
-#include "InventoryExporter.h"
+#include "core/InventoryExporter.h"
 
 namespace core {
     InventoryExporter::InventoryExporter(std::string title)
