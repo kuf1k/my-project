@@ -8,7 +8,7 @@ namespace core {
     public:
         static bool canPrepare(const Recipe &recipe, const Inventory &inventory);
 
-        static bool checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory);
+        static void checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory);
     };
 }
 #endif //RECIPEMATCHER_H
