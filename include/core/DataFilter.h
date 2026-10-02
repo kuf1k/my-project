@@ -7,7 +7,7 @@ namespace core {
     template<typename T>
     class DataFilter {
     public:
-        static std::vector<T> filterBy(const std::vector<T>, std::function<bool(const T &)> predicate) {
+        static std::vector<T> filterBy(const std::vector<T> &items, std::function<bool(const T &)> predicate) {
             std::vector<T> result;
             for (const auto &item: items) {
                 if (predicate(item)) {
