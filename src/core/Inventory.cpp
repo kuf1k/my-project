@@ -92,4 +92,13 @@ namespace core {
         std::cout << "Liquid Ingredients: " << liquidCount << " (Total Volume: " << totalLiquidVolume << " ml)\n";
         std::cout << "=================================\n";
     }
+    double Inventory::getIngredientAmount(const std::string &name) const {
+        double total = 0.0;
+        for (const auto &item: items) {
+            if (item->getName() == name) {
+                total += item->getAmount();
+            }
+        }
+        return total;
+    }
 }

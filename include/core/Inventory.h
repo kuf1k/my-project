@@ -27,6 +27,8 @@ namespace core {
         void printExpiringSoon(const std::string currentDate) const;
 
         void printStatistics() const;
+
+        double getIngredientAmount(const std::string& name) const;
     };
 }
 
