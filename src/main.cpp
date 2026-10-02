@@ -3,6 +3,8 @@
 #include "core/SolidIngredient.h"
 #include "core/LiquidIngredient.h"
 #include "core/Inventory.h"
+#include "core/Recipe.h"
+#include "core/RecipeMatcher.h"
 
 void displayMenu() {
     std::cout << "\n========================================\n";
@@ -15,7 +17,8 @@ void displayMenu() {
     std::cout << "5. View Expiring Soon Ingredients\n";
     std::cout << "6. Remove Expired Ingredients\n";
     std::cout << "7. View Inventory Statistics\n";
-    std::cout << "8. Exit\n";
+    std::cout << "8. Check Recipe Availability\n";
+    std::cout << "9. Exit\n";
     std::cout << "Choose an option (1-4): ";
 }
 
@@ -56,6 +59,11 @@ void enterInfo(std::string &name, double &amount, std::string &expirationDate) {
 int main() {
     core::Inventory inventory;
     bool running = true;
+
+    // Test recipe
+    core::Recipe pancakes("Pancakes");
+    pancakes.addRequirement("Flour", 200.0, "g");
+    pancakes.addRequirement("Milk", 500.0, "ml");
 
     while (running) {
         displayMenu();
@@ -109,7 +117,11 @@ int main() {
             }
         } else if (choice == 7) {
             inventory.printStatistics();
-        } else if (choice == 8) {
+        }
+        else if (choice == 8) {
+            core::RecipeMatcher::checkRecipeAvailability(pancakes,inventory);
+        }
+        else if (choice == 9) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
