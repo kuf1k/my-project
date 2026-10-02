@@ -2,8 +2,11 @@
 #include "core/Recipe.h"
 
 TEST(RecipeTest, RecipeCreationAndTitle) {
-    core::Recipe recipe("Pancakes");
+    core::Recipe recipe("Pancakes", 15, 350.0, "Mix ingredients and fry on a pan!");
     EXPECT_EQ(recipe.getTitle(), "Pancakes");
+    EXPECT_EQ(recipe.getPrepTime(),15);
+    EXPECT_DOUBLE_EQ(recipe.getCalories(),350.0);
+    EXPECT_EQ(recipe.getInstructions(),"Mix ingredients and fry on a pan!");
 }
 
 TEST(RecipeTest, AddRequirements) {
