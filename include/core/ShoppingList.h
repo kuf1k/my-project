@@ -13,16 +13,16 @@ namespace core {
     };
 
     class ShoppingList {
-        std::vector<ShoppingList> items;
+        std::vector<ShoppingListItem> items;
 
     public:
         ShoppingList() = default;
 
-        void genereateForRecipe(const Recipe &recipe, const Inventory &inventory);
+        void generateForRecipe(const Recipe &recipe, const Inventory &inventory);
 
-        void genereateForRecipes(const std::vector<Recipe> &recipes, const Inventory inventory);
+        void generateForRecipes(const std::vector<Recipe> &recipes, const Inventory inventory);
 
-        const std::vector<ShoppingList> getItems() const;
+        const std::vector<ShoppingListItem>& getItems() const;
 
         void printList() const;
 
