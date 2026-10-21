@@ -131,4 +131,12 @@ namespace core {
         }
         return true;
     }
+
+    void Inventory::clear() {
+        items.clear();
+    }
+
+    const std::vector<std::unique_ptr<Ingredient> > &Inventory::getItems() const {
+        return items;
+    }
 }

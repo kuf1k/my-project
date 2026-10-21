@@ -5,7 +5,7 @@
 namespace core {
     class StorageManager {
     public:
-        static bool saveInvertory(const Inventory &inventory, const std::string &filename);
+        static bool saveInventory(const Inventory &inventory, const std::string &filename);
 
         static bool loadInventory(Inventory &inventory, const std::string &filename);
     };

@@ -31,7 +31,11 @@ namespace core {
 
         double getIngredientAmount(const std::string &name) const;
 
-        bool consumeRecipe(const Recipe& recipe);
+        bool consumeRecipe(const Recipe &recipe);
+
+        void clear();
+
+        const std::vector<std::unique_ptr<Ingredient> > &getItems() const;
     };
 }
 
