@@ -7,6 +7,7 @@
 #include "core/RecipeMatcher.h"
 #include "core/DataFilter.h"
 #include "core/FileExporter.h"
+#include "core/ShoppingList.h"
 
 void displayMenu() {
     std::cout << "\n========================================\n";
@@ -22,8 +23,9 @@ void displayMenu() {
     std::cout << "8. Check Recipe Availability\n";
     std::cout << "9. Export Inventory Report to File\n";
     std::cout << "10. Filter Recipes by Max Calories \n";
-    std::cout << "11. Exit\n";
-    std::cout << "Choose an option (1-10): ";
+    std::cout << "11. Generate Shopping List for Pancakes\n";
+    std::cout << "12. Exit\n";
+    std::cout << "Choose an option (1-12): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -157,6 +159,11 @@ int main() {
             }
         }
         else if (choice == 11) {
+            core::ShoppingList shopList;
+            shopList.generateForRecipe(pancakes, inventory);
+            shopList.printList();
+        }
+        else if (choice == 12) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {

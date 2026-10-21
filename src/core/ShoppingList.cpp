@@ -37,7 +37,7 @@ namespace core {
     }
 
     void ShoppingList::printList() const {
-        std::cout << "\n=== Shopping List ===\n";
+        std::cout << "\n====== Shopping List ======\n";
         if (items.empty()) {
             std::cout << "Great news! You have all the ingredients in your inventory!\n";
         } else {
