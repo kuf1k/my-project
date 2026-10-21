@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "core/Ingredient.h"
+#include "core/Recipe.h"
 
 
 namespace core {
@@ -28,7 +29,9 @@ namespace core {
 
         void printStatistics() const;
 
-        double getIngredientAmount(const std::string& name) const;
+        double getIngredientAmount(const std::string &name) const;
+
+        bool consumeRecipe(const Recipe& recipe);
     };
 }
 

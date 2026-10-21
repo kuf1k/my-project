@@ -1,5 +1,6 @@
 #include "core/Inventory.h"
 #include "core/DateUtils.h"
+#include "core/RecipeMatcher.h"
 #include <iostream>
 #include <vector>
 
@@ -92,6 +93,7 @@ namespace core {
         std::cout << "Liquid Ingredients: " << liquidCount << " (Total Volume: " << totalLiquidVolume << " ml)\n";
         std::cout << "=================================\n";
     }
+
     double Inventory::getIngredientAmount(const std::string &name) const {
         double total = 0.0;
         for (const auto &item: items) {
@@ -100,5 +102,33 @@ namespace core {
             }
         }
         return total;
+    }
+
+    bool Inventory::consumeRecipe(const Recipe &recipe) {
+        if (!RecipeMatcher::canPrepare(recipe, *this)) {
+            return false;
+        }
+
+        for (const auto &req: recipe.getRequirements()) {
+            double amountNeeded = req.requiredAmount;
+
+            for (auto it = items.begin(); it != items.end() && amountNeeded > 0;) {
+                if ((*it)->getName() == req.name) {
+                    double available = (*it)->getAmount();
+
+                    if (available <= amountNeeded) {
+                        amountNeeded -= available;
+                        it = items.erase(it);
+                    } else {
+                        (*it)->reduceAmount(amountNeeded);
+                        amountNeeded = 0;
+                        ++it;
+                    }
+                } else {
+                    ++it;
+                }
+            }
+        }
+        return true;
     }
 }
