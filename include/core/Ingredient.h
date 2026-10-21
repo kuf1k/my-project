@@ -23,6 +23,8 @@ namespace core {
 
         void setAmount(double newAmount);
 
+        void reduceAmount(double value);
+
         bool isExpired(const std::string &currentDate) const;
 
         FreshnessStatus getFreshnessStatus(const std::string &currentDate) const;

@@ -23,6 +23,16 @@ namespace core {
         }
     }
 
+    void Ingredient::reduceAmount(double value) {
+        if (value >= amount) {
+            amount = 0;
+        }
+        else {
+            amount -= value;
+        }
+    }
+
+
     bool Ingredient::isExpired(const std::string &currentDate) const {
         if (DateUtils::calculateStatus(expirationDate,currentDate) == FreshnessStatus::Expired) {
             return true;
