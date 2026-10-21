@@ -16,7 +16,8 @@ add_executable(MainProject src/main.cpp
         src/core/RecipeRepository.cpp
         src/core/InventoryExporter.cpp
         src/core/FileExporter.cpp
-        src/core/ShoppingList.cpp)
+        src/core/ShoppingList.cpp
+        src/core/StorageManager.cpp)
 
 # --- GoogleTest Framework Setup ---
 enable_testing()
@@ -52,7 +53,8 @@ add_executable(UnitTests
         tests/FileExporterTest.cpp
         tests/DataFilterTest.cpp
         src/core/ShoppingList.cpp
-        tests/ShopingListTest.cpp)
+        tests/ShopingListTest.cpp
+        src/core/StorageManager.cpp)
 
 # Link GoogleTest main entry point library
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main)
