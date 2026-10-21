@@ -20,9 +20,9 @@ namespace core {
 
         void generateForRecipe(const Recipe &recipe, const Inventory &inventory);
 
-        void generateForRecipes(const std::vector<Recipe> &recipes, const Inventory inventory);
+        void generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory);
 
-        const std::vector<ShoppingListItem>& getItems() const;
+        const std::vector<ShoppingListItem> &getItems() const;
 
         void printList() const;
 

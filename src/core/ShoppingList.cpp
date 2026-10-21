@@ -8,7 +8,7 @@ namespace core {
         generateForRecipes(singleRecipe, inventory);
     }
 
-    void ShoppingList::generateForRecipes(const std::vector<Recipe> &recipes, const Inventory inventory) {
+    void ShoppingList::generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory) {
         clear();
 
         struct RequiredIitem {
@@ -16,13 +16,13 @@ namespace core {
             std::string unit;
         };
         std::map<std::string, RequiredIitem> totalRequirements;
-        for (const auto& recipe : recipes) {
-            for (const auto& req : recipe.getRequirements()) {
+        for (const auto &recipe: recipes) {
+            for (const auto &req: recipe.getRequirements()) {
                 totalRequirements[req.name].amount += req.requiredAmount;
                 totalRequirements[req.name].unit = req.unit;
             }
         }
-        for (const auto& [name, req] : totalRequirements) {
+        for (const auto &[name, req]: totalRequirements) {
             double available = inventory.getIngredientAmount(name);
 
             if (available < req.amount) {
@@ -31,7 +31,8 @@ namespace core {
             }
         }
     }
-    const std::vector<ShoppingListItem>& ShoppingList::getItems() const {
+
+    const std::vector<ShoppingListItem> &ShoppingList::getItems() const {
         return items;
     }
 
@@ -40,9 +41,9 @@ namespace core {
         if (items.empty()) {
             std::cout << "Great news! You have all the ingredients in your inventory!\n";
         } else {
-            for (const auto& item : items) {
+            for (const auto &item: items) {
                 std::cout << "- " << item.name << ": need to buy "
-                          << item.amountToBuy << " " << item.unit << "\n";
+                        << item.amountToBuy << " " << item.unit << "\n";
             }
         }
         std::cout << "===========================\n";
