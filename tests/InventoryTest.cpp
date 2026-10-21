@@ -70,3 +70,32 @@ TEST(InventoryTest, PrintStatisticsCalculatesCorrectly) {
     EXPECT_NE(output.find("Solid Ingredients: 2 (Total Weight: 700 g)"), std::string::npos);
     EXPECT_NE(output.find("Liquid Ingredients: 1 (Total Volume: 1000 ml)"), std::string::npos);
 }
+
+TEST(InventoryTest, ConsumeRecipeSuccessfully) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 500.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-12-31"));
+
+    core::Recipe pancakes("Pancakes");
+    pancakes.addRequirement("Flour", 200.0, "g");
+    pancakes.addRequirement("Milk", 500.0, "ml");
+
+    bool success = inventory.consumeRecipe(pancakes);
+    EXPECT_TRUE(success);
+
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Flour"), 300.0);
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Milk"), 500.0);
+}
+
+TEST(InventoryTest, ConsumeRecipeFailsWhenNotEnough) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 100.0, "2026-12-31"));
+
+    core::Recipe pancakes("Pancakes");
+    pancakes.addRequirement("Flour", 200.0, "g");
+
+    bool success = inventory.consumeRecipe(pancakes);
+    EXPECT_FALSE(success);
+
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Flour"), 100.0);
+}

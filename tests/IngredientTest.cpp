@@ -17,3 +17,13 @@ TEST(LiquidIngredientTest, InizialiazationAndUnit) {
     EXPECT_EQ(milk.getExpirationDate(), "2026-10-15");
     EXPECT_EQ(milk.getUnit(), "ml");
 }
+
+TEST(IngredientTest, ReduceAmountLogic) {
+    core::SolidIngredient flour("Flour", 500.0, "2026-12-31");
+
+    flour.reduceAmount(200.0);
+    EXPECT_DOUBLE_EQ(flour.getAmount(), 300.0);
+
+    flour.reduceAmount(400.0);
+    EXPECT_DOUBLE_EQ(flour.getAmount(), 0.0);
+}
