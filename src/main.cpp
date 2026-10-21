@@ -25,8 +25,11 @@ void displayMenu() {
     std::cout << "9. Export Inventory Report to File\n";
     std::cout << "10. Filter Recipes by Max Calories \n";
     std::cout << "11. Generate Shopping List for Pancakes\n";
-    std::cout << "12. Exit\n";
-    std::cout << "Choose an option (1-12): ";
+    std::cout << "12. Cook Pancakes (Consume Recipe)\n";
+    std::cout << "13. Save Inventory to File\n";
+    std::cout << "14. Load Inventory from File\n";
+    std::cout << "15. Exit\n";
+    std::cout << "Choose an option (1-15): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -162,6 +165,26 @@ int main() {
             shopList.generateForRecipe(pancakes, inventory);
             shopList.printList();
         } else if (choice == 12) {
+            if (inventory.consumeRecipe(pancakes)) {
+                std::cout << "Successfully cooked Pancakes! Ingredients were deducted from inventory.\n";
+            } else {
+                std::cout << "Failed to cook Pancakes. Not enough ingredients in inventory!\n";
+            }
+        } else if (choice == 13) {
+            std::string filename = "inventory_save.csv";
+            if (core::StorageManager::saveInventory(inventory, filename)) {
+                std::cout << "Inventory successfully saved to '" << filename << "'!\n";
+            } else {
+                std::cout << "Failed to save inventory.\n";
+            }
+        } else if (choice == 14) {
+            std::string filename = "inventory_save.csv";
+            if (core::StorageManager::loadInventory(inventory, filename)) {
+                std::cout << "Inventory successfully loaded from '" << filename << "'!\n";
+            } else {
+                std::cout << "Failed to load inventory (file may not exist).\n";
+            }
+        } else if (choice == 15) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
