@@ -171,7 +171,7 @@ int main() {
                 std::cout << "Failed to cook Pancakes. Not enough ingredients in inventory!\n";
             }
         } else if (choice == 13) {
-            std::string filename = "inventory_save.csv";
+            std::string filename = "inventory_save.json";
             if (core::StorageManager::saveInventory(inventory, filename)) {
                 std::cout << "Inventory successfully saved to '" << filename << "'!\n";
             } else {

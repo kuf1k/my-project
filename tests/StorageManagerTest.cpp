@@ -4,7 +4,7 @@
 #include "core/LiquidIngredient.h"
 
 TEST(StorageManagerTest, SaveAndLoadInventorySuccessfully) {
-    std::string testFileName = "test_inventory_storage.csv";
+    std::string testFileName = "test_inventory_storage.json";
 
     core::Inventory originalInventory;
     originalInventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 400.0, "2026-12-31"));

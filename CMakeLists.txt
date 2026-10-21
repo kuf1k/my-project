@@ -5,6 +5,29 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories(include)
 
+include(FetchContent)
+
+# --- External libraries Setup ---
+
+# Fetch nlohmann_json library for JSON serialization/deserialization
+FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+
+# Fetch GoogleTest framework for unit testing
+enable_testing()
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+
+# Ensure C++ runtime compatibility for MSVC on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Download and make external libraries available to the build system
+FetchContent_MakeAvailable(nlohmann_json googletest)
+
 # Main executable configuration
 add_executable(MainProject src/main.cpp
         src/core/Ingredient.cpp
@@ -19,20 +42,9 @@ add_executable(MainProject src/main.cpp
         src/core/ShoppingList.cpp
         src/core/StorageManager.cpp)
 
-# --- GoogleTest Framework Setup ---
-enable_testing()
+# Link nlohmann_json to the main executable
+target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json)
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-
-# Ensure C++ runtime compatibility for MSVC on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-# Download and make GoogleTest available to the build system
-FetchContent_MakeAvailable(googletest)
 # Unit tests executable configuration
 add_executable(UnitTests
         tests/IngredientTest.cpp
@@ -57,8 +69,8 @@ add_executable(UnitTests
         src/core/StorageManager.cpp
         tests/StorageManagerTest.cpp)
 
-# Link GoogleTest main entry point library
-target_link_libraries(UnitTests PRIVATE GTest::gtest_main)
+# Link libraries to unit tests executable
+target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json)
 
 # Automatic test discovery for IDE integration
 include(GoogleTest)
