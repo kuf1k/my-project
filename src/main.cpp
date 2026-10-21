@@ -8,6 +8,7 @@
 #include "core/DataFilter.h"
 #include "core/FileExporter.h"
 #include "core/ShoppingList.h"
+#include "core/StorageManager.h"
 
 void displayMenu() {
     std::cout << "\n========================================\n";
@@ -62,7 +63,7 @@ void enterInfo(std::string &name, double &amount, std::string &expirationDate) {
     expirationDate = readDate("Enter expiration date (YYYY-MM-DD): ");
 }
 
-void runExport(core::InventoryExporter& exporter, const core::Inventory& inventory, const std::string& date) {
+void runExport(core::InventoryExporter &exporter, const core::Inventory &inventory, const std::string &date) {
     if (exporter.exportData(inventory, date)) {
         std::cout << "Successfully exported report: " << exporter.getReportTitle() << "!\n";
     } else {
@@ -134,36 +135,33 @@ int main() {
             inventory.printStatistics();
         } else if (choice == 8) {
             core::RecipeMatcher::checkRecipeAvailability(pancakes, inventory);
-        }
-        else if (choice == 9) {
+        } else if (choice == 9) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
 
             core::FileExporter fileExporter("NutriMesh Inventory Report", "inventory_report.txt");
 
             runExport(fileExporter, inventory, currentDate);
-        }
-        else if (choice == 10) {
+        } else if (choice == 10) {
             double maxCalories = readAmount("Enter maximum calorie limit: ");
 
-            auto filteredRecipes = core::DataFilter<core::Recipe>::filterBy(recipes, [maxCalories](const core::Recipe &recipe) {
-                return recipe.getCalories() <= maxCalories;
-            });
+            auto filteredRecipes = core::DataFilter<core::Recipe>::filterBy(
+                recipes, [maxCalories](const core::Recipe &recipe) {
+                    return recipe.getCalories() <= maxCalories;
+                });
 
             if (filteredRecipes.empty()) {
                 std::cout << "No recipes found under " << maxCalories << " kcal.\n";
             } else {
                 std::cout << "\n=== Recipes under " << maxCalories << " kcal ===\n";
-                for (const auto &recipe : filteredRecipes) {
+                for (const auto &recipe: filteredRecipes) {
                     std::cout << "- " << recipe.getTitle() << " (" << recipe.getCalories() << " kcal)\n";
                 }
             }
-        }
-        else if (choice == 11) {
+        } else if (choice == 11) {
             core::ShoppingList shopList;
             shopList.generateForRecipe(pancakes, inventory);
             shopList.printList();
-        }
-        else if (choice == 12) {
+        } else if (choice == 12) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {

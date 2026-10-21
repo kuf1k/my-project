@@ -54,7 +54,8 @@ add_executable(UnitTests
         tests/DataFilterTest.cpp
         src/core/ShoppingList.cpp
         tests/ShopingListTest.cpp
-        src/core/StorageManager.cpp)
+        src/core/StorageManager.cpp
+        tests/StorageManagerTest.cpp)
 
 # Link GoogleTest main entry point library
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main)
