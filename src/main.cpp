@@ -7,6 +7,7 @@
 #include "core/RecipeMatcher.h"
 #include "core/DataFilter.h"
 #include "core/FileExporter.h"
+#include "core/RecipeRepository.h"
 #include "core/ShoppingList.h"
 #include "core/StorageManager.h"
 
@@ -28,8 +29,9 @@ void displayMenu() {
     std::cout << "12. Cook Pancakes (Consume Recipe)\n";
     std::cout << "13. Save Inventory to File\n";
     std::cout << "14. Load Inventory from File\n";
-    std::cout << "15. Exit\n";
-    std::cout << "Choose an option (1-15): ";
+    std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
+    std::cout << "16. Exit\n";
+    std::cout << "Choose an option (1-16): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -76,13 +78,14 @@ void runExport(core::InventoryExporter &exporter, const core::Inventory &invento
 
 int main() {
     core::Inventory inventory;
+    core::RecipeRepository recipeRepo;
     bool running = true;
-    std::vector<core::Recipe> recipes;
 
     // Test recipe
-    core::Recipe pancakes("Pancakes");
+    core::Recipe pancakes("Pancakes", 15, 350.0, "Mix flour, milk and fry on medium heat.");
     pancakes.addRequirement("Flour", 200.0, "g");
     pancakes.addRequirement("Milk", 500.0, "ml");
+    recipeRepo.addRecipe(pancakes);
 
     while (running) {
         displayMenu();
@@ -148,7 +151,7 @@ int main() {
             double maxCalories = readAmount("Enter maximum calorie limit: ");
 
             auto filteredRecipes = core::DataFilter<core::Recipe>::filterBy(
-                recipes, [maxCalories](const core::Recipe &recipe) {
+                recipeRepo.getRecipes(), [maxCalories](const core::Recipe &recipe) {
                     return recipe.getCalories() <= maxCalories;
                 });
 
@@ -178,17 +181,66 @@ int main() {
                 std::cout << "Failed to save inventory.\n";
             }
         } else if (choice == 14) {
-            std::string filename = "inventory_save.csv";
+            std::string filename = "inventory_save.json";
             if (core::StorageManager::loadInventory(inventory, filename)) {
                 std::cout << "Inventory successfully loaded from '" << filename << "'!\n";
             } else {
                 std::cout << "Failed to load inventory (file may not exist).\n";
             }
         } else if (choice == 15) {
+            std::cout << "\n=== Recipe Builder ===\n";
+
+            std::string title;
+            std::cout << "Enter recipe title: ";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::getline(std::cin, title);
+
+            if (recipeRepo.hasRecipe(title)) {
+                std::cout << "Recipe with title '" << title << "' already exists!\n";
+            } else {
+                int prepTime = 0;
+                double calories = 0.0;
+                std::string instructions;
+
+                std::cout << "Enter preparation time (minutes): ";
+                std::cin >> prepTime;
+
+                calories = readAmount("Enter calories (kcal): ");
+
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Enter preparation instructions: ";
+                std::getline(std::cin, instructions);
+
+                core::Recipe newRecipe(title, prepTime, calories, instructions);
+
+                std::string response = "yes";
+                std::cout << "\n=== Adding Ingredients to Recipe ===\n";
+                while (response == "yes" || response == "y" || response == "Yes" || response == "YES") {
+                    std::string ingName, unit;
+                    double amount = 0.0;
+
+                    std::cout << "Ingredient name: ";
+                    std::getline(std::cin, ingName);
+
+                    amount = readAmount("Amount required: ");
+
+                    std::cout << "Unit (g/ml): ";
+                    std::cin >> unit;
+
+                    newRecipe.addRequirement(ingName, amount, unit);
+
+                    std::cout << "Add another ingredient? (yes/no): ";
+                    std::cin >> response;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
+                recipeRepo.addRecipe(newRecipe);
+                std::cout << "Recipe '" << title << "' successfully created and added!\n";
+            }
+        } else if (choice == 16) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
-            std::cout << "Invalid option! Please choose between 1 and 4.\n";
+            std::cout << "Invalid option! Please choose between 1 and 16.\n";
         }
     }
     return 0;

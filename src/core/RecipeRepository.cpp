@@ -39,6 +39,7 @@ namespace core {
     const std::vector<Recipe> &RecipeRepository::getRecipes() const {
         return recipes;
     }
+
     void RecipeRepository::addRecipe(const Recipe &recipe) {
         if (hasRecipe(recipe.getTitle())) {
             std::cout << "Recipe with title '" << recipe.getTitle() << "' already exists. Skipping.\n";
