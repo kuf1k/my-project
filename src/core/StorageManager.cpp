@@ -62,4 +62,82 @@ namespace core {
         }
         return true;
     }
+
+    bool StorageManager::saveRecipes(const RecipeRepository &repo, const std::string &filename) {
+        json jArray = json::array();
+
+        for (const auto &recipe: repo.getRecipes()) {
+            json recipeJson;
+            recipeJson["title"] = recipe.getTitle();
+            recipeJson["prepTimeMinutes"] = recipe.getPrepTime();
+            recipeJson["calories"] = recipe.getCalories();
+            recipeJson["instructions"] = recipe.getInstructions();
+
+            json reqArray = json::array();
+            for (const auto &req: recipe.getRequirements()) {
+                json reqJson;
+                reqJson["name"] = req.name;
+                reqJson["requiredAmount"] = req.requiredAmount;
+                reqJson["unit"] = req.unit;
+                reqArray.push_back(reqJson);
+            }
+            recipeJson["requirements"] = reqArray;
+
+            jArray.push_back(recipeJson);
+        }
+
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Failed to open file for saving recipes: " << filename << "\n";
+            return false;
+        }
+
+        outFile << jArray.dump(4);
+        outFile.close();
+        return true;
+    }
+
+    bool StorageManager::loadRecipes(RecipeRepository &repo, const std::string &filename) {
+        std::ifstream inFile(filename);
+        if (!inFile.is_open()) {
+            std::cerr << "Failed to open file for loading recipes: " << filename << "\n";
+            return false;
+        }
+
+        json jArray;
+        try {
+            inFile >> jArray;
+        } catch (const json::parse_error &e) {
+            std::cerr << "JSON parse error: " << e.what() << "\n";
+            return false;
+        }
+
+        for (const auto &recipeJson: jArray) {
+            std::string title = recipeJson.value("title", "");
+            size_t prepTime = recipeJson.value("prepTimeMinutes", 0);
+            double calories = recipeJson.value("calories", 0.0);
+            std::string instructions = recipeJson.value("instructions", "");
+
+            if (repo.hasRecipe(title)) {
+                continue;
+            }
+
+            Recipe recipe(title, prepTime, calories, instructions);
+
+            if (recipeJson.contains("requirements") && recipeJson["requirements"].is_array()) {
+                for (const auto &reqJson: recipeJson["requirements"]) {
+                    std::string reqName = reqJson.value("name", "");
+                    double reqAmount = reqJson.value("requiredAmount", 0.0);
+                    std::string reqUnit = reqJson.value("unit", "");
+
+                    recipe.addRequirement(reqName, reqAmount, reqUnit);
+                }
+            }
+
+            repo.addRecipe(recipe);
+        }
+
+        inFile.close();
+        return true;
+    }
 }
