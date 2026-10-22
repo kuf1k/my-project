@@ -13,4 +13,4 @@ namespace core {
     };
 }
 
-#endif COUNTABLEINGREDIENT_H
+#endif //COUNTABLEINGREDIENT_H

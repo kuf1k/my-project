@@ -3,6 +3,16 @@ project(NutriMesh VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# --- Qt Configuration ---
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_PREFIX_PATH "D:/Qt/6.12.0/mingw_64")
+
+# Find Qt6 Widgets module
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
+
 include_directories(include)
 
 include(FetchContent)
@@ -41,8 +51,7 @@ add_executable(MainProject src/main.cpp
         src/core/FileExporter.cpp
         src/core/ShoppingList.cpp
         src/core/StorageManager.cpp
-        src/core/CountableIngredient.cpp
-        include/core/CountableIngredient.h)
+        src/core/CountableIngredient.cpp)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json)
@@ -70,8 +79,7 @@ add_executable(UnitTests
         tests/ShopingListTest.cpp
         src/core/StorageManager.cpp
         tests/StorageManagerTest.cpp
-        src/core/CountableIngredient.cpp
-        include/core/CountableIngredient.h)
+        src/core/CountableIngredient.cpp)
 
 # Link libraries to unit tests executable
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json)
