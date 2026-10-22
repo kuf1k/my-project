@@ -25,8 +25,8 @@ void displayMenu() {
     std::cout << "8. Check Recipe Availability\n";
     std::cout << "9. Export Inventory Report to File\n";
     std::cout << "10. Filter Recipes by Max Calories \n";
-    std::cout << "11. Generate Shopping List for Pancakes\n";
-    std::cout << "12. Cook Pancakes (Consume Recipe)\n";
+    std::cout << "11. Generate Shopping List for Recipe\n";
+    std::cout << "12. Cook Recipe (Consume Ingredients)\n";
     std::cout << "13. Save Inventory to File\n";
     std::cout << "14. Load Inventory from File\n";
     std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
@@ -76,6 +76,28 @@ void runExport(core::InventoryExporter &exporter, const core::Inventory &invento
         std::cout << "Failed to export report.\n";
     }
 }
+
+const core::Recipe *selectRecipe(const core::RecipeRepository &recipeRepo) {
+    if (recipeRepo.getRecipesCount() == 0) {
+        std::cout << "Recipe book is empty! Please add a recipe first.\n";
+        return nullptr;
+    }
+
+    std::string title;
+    std::cout << "Enter recipe title: ";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, title);
+
+    for (const auto &recipe: recipeRepo.getRecipes()) {
+        if (recipe.getTitle() == title) {
+            return &recipe;
+        }
+    }
+
+    std::cout << "Recipe '" << title << "' not found in recipe book.\n";
+    return nullptr;
+}
+
 
 int main() {
     core::Inventory inventory;
@@ -141,7 +163,10 @@ int main() {
         } else if (choice == 7) {
             inventory.printStatistics();
         } else if (choice == 8) {
-            core::RecipeMatcher::checkRecipeAvailability(pancakes, inventory);
+            const auto *recipe = selectRecipe(recipeRepo);
+            if (recipe) {
+                core::RecipeMatcher::checkRecipeAvailability(*recipe, inventory);
+            }
         } else if (choice == 9) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
 
@@ -165,14 +190,21 @@ int main() {
                 }
             }
         } else if (choice == 11) {
-            core::ShoppingList shopList;
-            shopList.generateForRecipe(pancakes, inventory);
-            shopList.printList();
+            const auto *recipe = selectRecipe(recipeRepo);
+            if (recipe) {
+                core::ShoppingList shopList;
+                shopList.generateForRecipe(*recipe, inventory);
+                shopList.printList();
+            }
         } else if (choice == 12) {
-            if (inventory.consumeRecipe(pancakes)) {
-                std::cout << "Successfully cooked Pancakes! Ingredients were deducted from inventory.\n";
-            } else {
-                std::cout << "Failed to cook Pancakes. Not enough ingredients in inventory!\n";
+            const auto *recipe = selectRecipe(recipeRepo);
+            if (recipe) {
+                if (inventory.consumeRecipe(*recipe)) {
+                    std::cout << "Successfully cooked " << recipe->getTitle() <<
+                            "! Ingredients were deducted from inventory.\n";
+                } else {
+                    std::cout << "Failed to cook " << recipe->getTitle() << ". Not enough ingredients in inventory!\n";
+                }
             }
         } else if (choice == 13) {
             std::string filename = "inventory_save.json";
