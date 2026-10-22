@@ -40,7 +40,9 @@ add_executable(MainProject src/main.cpp
         src/core/InventoryExporter.cpp
         src/core/FileExporter.cpp
         src/core/ShoppingList.cpp
-        src/core/StorageManager.cpp)
+        src/core/StorageManager.cpp
+        src/core/CountableIngredient.cpp
+        include/core/CountableIngredient.h)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json)
@@ -67,7 +69,9 @@ add_executable(UnitTests
         src/core/ShoppingList.cpp
         tests/ShopingListTest.cpp
         src/core/StorageManager.cpp
-        tests/StorageManagerTest.cpp)
+        tests/StorageManagerTest.cpp
+        src/core/CountableIngredient.cpp
+        include/core/CountableIngredient.h)
 
 # Link libraries to unit tests executable
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json)
