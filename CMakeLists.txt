@@ -51,10 +51,13 @@ add_executable(MainProject src/main.cpp
         src/core/FileExporter.cpp
         src/core/ShoppingList.cpp
         src/core/StorageManager.cpp
-        src/core/CountableIngredient.cpp)
+        src/core/CountableIngredient.cpp
+        src/ui/MainWindow.cpp
+        include/ui/MainWindow.h
+        src/ui/MainWindow.ui)
 
 # Link nlohmann_json to the main executable
-target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets)
 
 # Unit tests executable configuration
 add_executable(UnitTests

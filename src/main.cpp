@@ -1,4 +1,7 @@
-#include <iostream>
+
+// CLI Menu
+
+/*#include <iostream>
 #include <memory>
 #include "core/SolidIngredient.h"
 #include "core/LiquidIngredient.h"
@@ -11,8 +14,9 @@
 #include "core/ShoppingList.h"
 #include "core/StorageManager.h"
 #include "core/CountableIngredient.h"
+*/
 
-void displayMenu() {
+/* void displayMenu() {
     std::cout << "\n========================================\n";
     std::cout << "     NutriMesh - Kitchen Assistant \n";
     std::cout << "========================================\n";
@@ -324,4 +328,17 @@ int main() {
         }
     }
     return 0;
+}
+*/
+
+#include <QApplication>
+#include "ui/MainWindow.h"
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    MainWindow window;
+    window.show();
+
+    return app.exec();
 }
