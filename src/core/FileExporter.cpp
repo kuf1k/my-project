@@ -19,6 +19,16 @@ namespace core {
         outFile << " Total Items: " << inventory.getItemsCount() << "\n";
         outFile << "========================================\n";
 
+
+        outFile << "=== Inventory Details ===\n";
+        for (const auto &item: inventory.getItems()) {
+            FreshnessStatus status = item->getFreshnessStatus(currentDate);
+            outFile << "- " << item->getName()
+                    << " | Amount: " << item->getAmount() << " " << item->getUnit()
+                    << " | Exp: " << item->getExpirationDate()
+                    << " | Status: " << DateUtils::getStatusLabel(status) << "\n";
+        }
+
         outFile.close();
         return true;
     }
