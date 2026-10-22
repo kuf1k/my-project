@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+
+#include "core/CountableIngredient.h"
 #include "core/SolidIngredient.h"
 #include "core/LiquidIngredient.h"
 
@@ -26,4 +28,12 @@ TEST(IngredientTest, ReduceAmountLogic) {
 
     flour.reduceAmount(400.0);
     EXPECT_DOUBLE_EQ(flour.getAmount(), 0.0);
+}
+
+TEST(IngredientTest, InizialiazationAndUnit) {
+    core::CountableIngredient eggs("Eggs", 10.0, "2026-11-15");
+    EXPECT_EQ(eggs.getName(), "Eggs");
+    EXPECT_DOUBLE_EQ(eggs.getAmount(), 10.0);
+    EXPECT_EQ(eggs.getExpirationDate(), "2026-11-15");
+    EXPECT_EQ(eggs.getUnit(), "pcs");
 }
