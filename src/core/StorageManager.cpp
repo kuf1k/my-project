@@ -7,10 +7,10 @@
 using json = nlohmann::json;
 
 namespace core {
-    bool StorageManager::saveInventory(const Inventory& inventory, const std::string& filename) {
+    bool StorageManager::saveInventory(const Inventory &inventory, const std::string &filename) {
         json jArray = json::array();
 
-        for (const auto& item : inventory.getItems()) {
+        for (const auto &item: inventory.getItems()) {
             json itemObj;
             itemObj["type"] = (item->getUnit() == "g") ? "Solid" : "Liquid";
             itemObj["name"] = item->getName();
@@ -21,16 +21,20 @@ namespace core {
         }
 
         std::ofstream file(filename);
-        if (!file.is_open()) return false;
+        if (!file.is_open()) {
+            return false;
+        }
 
         file << jArray.dump(4);
         file.close();
         return true;
     }
 
-    bool StorageManager::loadInventory(Inventory& inventory, const std::string& filename) {
+    bool StorageManager::loadInventory(Inventory &inventory, const std::string &filename) {
         std::ifstream file(filename);
-        if (!file.is_open()) return false;
+        if (!file.is_open()) {
+            return false;
+        }
 
 
         json jArray;
@@ -44,7 +48,7 @@ namespace core {
         file.close();
         inventory.clear();
 
-        for (const auto& itemObj : jArray) {
+        for (const auto &itemObj: jArray) {
             std::string type = itemObj["type"];
             std::string name = itemObj["name"];
             double amount = itemObj["amount"];

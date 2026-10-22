@@ -18,6 +18,10 @@ namespace core {
         std::vector<Recipe> getCookableRecipes(const Inventory &inventory) const;
 
         size_t getRecipesCount() const;
+
+        bool hasRecipe(const std::string &title) const;
+
+        const std::vector<Recipe> &getRecipes() const;
     };
 }
 

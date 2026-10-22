@@ -35,3 +35,15 @@ TEST(RecipeRepositoryTest, GetCookableRecipesReturnsOnlyMatching) {
     ASSERT_EQ(cookable.size(), 1);
     EXPECT_EQ(cookable[0].getTitle(), "Pancakes");
 }
+
+TEST(RecipeRepositoryTest, PreventDuplicateRecipes) {
+    core::RecipeRepository repo;
+    core::Recipe pancakes("Pancakes",15,350.0,"Mix and fry");
+
+    repo.addRecipe(pancakes);
+    EXPECT_EQ(repo.getRecipesCount(),1);
+    EXPECT_TRUE(repo.hasRecipe("Pancakes"));
+
+    repo.addRecipe(pancakes);
+    EXPECT_EQ(repo.getRecipesCount(),1);
+}
