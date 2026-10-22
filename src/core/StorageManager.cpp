@@ -4,6 +4,8 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
+#include "core/CountableIngredient.h"
+
 using json = nlohmann::json;
 
 namespace core {
@@ -12,7 +14,13 @@ namespace core {
 
         for (const auto &item: inventory.getItems()) {
             json itemObj;
-            itemObj["type"] = (item->getUnit() == "g") ? "Solid" : "Liquid";
+            if (item->getUnit() == "g") {
+                itemObj["type"] = "Solid";
+            } else if (item->getUnit() == "ml") {
+                itemObj["type"] = "Liquid";
+            } else if (item->getUnit() == "pcs") {
+                itemObj["type"] == "Countable";
+            }
             itemObj["name"] = item->getName();
             itemObj["amount"] = item->getAmount();
             itemObj["expirationDate"] = item->getExpirationDate();
@@ -58,6 +66,8 @@ namespace core {
                 inventory.addIngredient(std::make_unique<SolidIngredient>(name, amount, expirationDate));
             } else if (type == "Liquid") {
                 inventory.addIngredient(std::make_unique<LiquidIngredient>(name, amount, expirationDate));
+            } else if (type == "Countable") {
+                inventory.addIngredient(std::make_unique<CountableIngredient>(name, amount, expirationDate));
             }
         }
         return true;
