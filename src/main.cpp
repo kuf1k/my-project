@@ -27,8 +27,8 @@ void displayMenu() {
     std::cout << "10. Filter Recipes by Max Calories \n";
     std::cout << "11. Generate Shopping List for Recipe\n";
     std::cout << "12. Cook Recipe (Consume Ingredients)\n";
-    std::cout << "13. Save Inventory to File\n";
-    std::cout << "14. Load Inventory from File\n";
+    std::cout << "13. Save Data to Files (Inventory & Recipes)\n";
+    std::cout << "14. Load Data from Files (Inventory & Recipes)\n";
     std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
     std::cout << "16. View All Recipes (Recipe Book)\n";
     std::cout << "17. Exit\n";
@@ -103,6 +103,10 @@ int main() {
     core::Inventory inventory;
     core::RecipeRepository recipeRepo;
     bool running = true;
+
+    core::StorageManager::loadInventory(inventory, "inventory_save.json");
+    core::StorageManager::loadRecipes(recipeRepo, "recipes_save.json");
+
 
     // Test recipe
     core::Recipe pancakes("Pancakes", 15, 350.0, "Mix flour, milk and fry on medium heat.");
@@ -207,18 +211,23 @@ int main() {
                 }
             }
         } else if (choice == 13) {
-            std::string filename = "inventory_save.json";
-            if (core::StorageManager::saveInventory(inventory, filename)) {
-                std::cout << "Inventory successfully saved to '" << filename << "'!\n";
+            bool invSaved = core::StorageManager::saveInventory(inventory, "inventory_save.json");
+            bool recSaved = core::StorageManager::saveRecipes(recipeRepo, "recipes_save.json");
+            if (invSaved && recSaved) {
+                std::cout << "Inventory and recipes successfully saved to JSON files!\n";
+            } else if (invSaved) {
+                std::cout << "Inventory saved, but failed to save recipes.\n";
             } else {
-                std::cout << "Failed to save inventory.\n";
+                std::cout << "Failed to save data.\n";
             }
         } else if (choice == 14) {
-            std::string filename = "inventory_save.json";
-            if (core::StorageManager::loadInventory(inventory, filename)) {
-                std::cout << "Inventory successfully loaded from '" << filename << "'!\n";
+            bool invLoaded = core::StorageManager::loadInventory(inventory, "inventory_save.json");
+            bool recLoaded = core::StorageManager::loadRecipes(recipeRepo, "recipes_save.json");
+
+            if (invLoaded || recLoaded) {
+                std::cout << "Data successfully loaded from JSON files!\n";
             } else {
-                std::cout << "Failed to load inventory (file may not exist).\n";
+                std::cout << "Failed to load data (files may not exist).\n";
             }
         } else if (choice == 15) {
             std::cout << "\n=== Recipe Builder ===\n";
