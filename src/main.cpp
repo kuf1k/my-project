@@ -10,6 +10,7 @@
 #include "core/RecipeRepository.h"
 #include "core/ShoppingList.h"
 #include "core/StorageManager.h"
+#include "core/CountableIngredient.h"
 
 void displayMenu() {
     std::cout << "\n========================================\n";
@@ -17,23 +18,24 @@ void displayMenu() {
     std::cout << "========================================\n";
     std::cout << "1. Add Solid Ingredient (g)\n";
     std::cout << "2. Add Liquid Ingredient (ml)\n";
-    std::cout << "3. View Inventory\n";
-    std::cout << "4. Search Ingredient by Name\n";
-    std::cout << "5. View Expiring Soon Ingredients\n";
-    std::cout << "6. Remove Expired Ingredients\n";
-    std::cout << "7. View Inventory Statistics\n";
-    std::cout << "8. Check Recipe Availability\n";
-    std::cout << "9. Export Inventory Report to File\n";
-    std::cout << "10. Filter Recipes by Max Calories \n";
-    std::cout << "11. Generate Shopping List for Recipe\n";
-    std::cout << "12. Cook Recipe (Consume Ingredients)\n";
-    std::cout << "13. Save Data to Files (Inventory & Recipes)\n";
-    std::cout << "14. Load Data from Files (Inventory & Recipes)\n";
-    std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
-    std::cout << "16. View All Recipes (Recipe Book)\n";
-    std::cout << "17. View Cookable Recipes (What can I cook now?)\n";
-    std::cout << "18. Exit\n";
-    std::cout << "Choose an option (1-18): ";
+    std::cout << "3. Add Countable Ingredient (pcs)\n";
+    std::cout << "4. View Inventory\n";
+    std::cout << "5. Search Ingredient by Name\n";
+    std::cout << "6. View Expiring Soon Ingredients\n";
+    std::cout << "7. Remove Expired Ingredients\n";
+    std::cout << "8. View Inventory Statistics\n";
+    std::cout << "9. Check Recipe Availability\n";
+    std::cout << "10. Export Inventory Report to File\n";
+    std::cout << "11. Filter Recipes by Max Calories \n";
+    std::cout << "12. Generate Shopping List for Recipe\n";
+    std::cout << "13. Cook Recipe (Consume Ingredients)\n";
+    std::cout << "14. Save Data to Files (Inventory & Recipes)\n";
+    std::cout << "15. Load Data from Files (Inventory & Recipes)\n";
+    std::cout << "16. Add Custom Recipe (Recipe Builder)\n";
+    std::cout << "17. View All Recipes (Recipe Book)\n";
+    std::cout << "18. View Cookable Recipes (What can I cook now?)\n";
+    std::cout << "19. Exit\n";
+    std::cout << "Choose an option (1-19): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -135,7 +137,7 @@ int main() {
 
             auto item = std::make_unique<core::SolidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
-            std::cout << "Solid ingredient has been successfully added!\n";
+            std::cout << "Solid ingredient (g) has been successfully added!\n";
         } else if (choice == 2) {
             std::string name, expirationDate;
             double amount = 0;
@@ -144,20 +146,29 @@ int main() {
 
             auto item = std::make_unique<core::LiquidIngredient>(name, amount, expirationDate);
             inventory.addIngredient(std::move(item));
-            std::cout << "Liquid ingredient has been successfully added!\n";
+            std::cout << "Liquid ingredient (ml) has been successfully added!\n";
         } else if (choice == 3) {
+            std::string name, expirationDate;
+            double amount = 0;
+
+            enterInfo(name, amount, expirationDate);
+
+            auto item = std::make_unique<core::CountableIngredient>(name, amount, expirationDate);
+            inventory.addIngredient(std::move(item));
+            std::cout << "Countable ingredient (pcs) has been successfully added!\n";
+        } else if (choice == 4) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.printInventory(currentDate);
-        } else if (choice == 4) {
+        } else if (choice == 5) {
             std::string query;
             std::cout << "Enter ingredient name (or part of it): ";
             std::cin >> query;
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.findByName(query, currentDate);
-        } else if (choice == 5) {
+        } else if (choice == 6) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             inventory.printExpiringSoon(currentDate);
-        } else if (choice == 6) {
+        } else if (choice == 7) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
             size_t removed = inventory.removeExpired(currentDate);
             if (removed > 0) {
@@ -165,20 +176,20 @@ int main() {
             } else {
                 std::cout << "No expired ingredients\n";
             }
-        } else if (choice == 7) {
-            inventory.printStatistics();
         } else if (choice == 8) {
+            inventory.printStatistics();
+        } else if (choice == 9) {
             const auto *recipe = selectRecipe(recipeRepo);
             if (recipe) {
                 core::RecipeMatcher::checkRecipeAvailability(*recipe, inventory);
             }
-        } else if (choice == 9) {
+        } else if (choice == 10) {
             std::string currentDate = readDate("Enter current date (YYYY-MM-DD): ");
 
             core::FileExporter fileExporter("NutriMesh Inventory Report", "inventory_report.txt");
 
             runExport(fileExporter, inventory, currentDate);
-        } else if (choice == 10) {
+        } else if (choice == 11) {
             double maxCalories = readAmount("Enter maximum calorie limit: ");
 
             auto filteredRecipes = core::DataFilter<core::Recipe>::filterBy(
@@ -194,14 +205,14 @@ int main() {
                     std::cout << "- " << recipe.getTitle() << " (" << recipe.getCalories() << " kcal)\n";
                 }
             }
-        } else if (choice == 11) {
+        } else if (choice == 12) {
             const auto *recipe = selectRecipe(recipeRepo);
             if (recipe) {
                 core::ShoppingList shopList;
                 shopList.generateForRecipe(*recipe, inventory);
                 shopList.printList();
             }
-        } else if (choice == 12) {
+        } else if (choice == 13) {
             const auto *recipe = selectRecipe(recipeRepo);
             if (recipe) {
                 if (inventory.consumeRecipe(*recipe)) {
@@ -211,7 +222,7 @@ int main() {
                     std::cout << "Failed to cook " << recipe->getTitle() << ". Not enough ingredients in inventory!\n";
                 }
             }
-        } else if (choice == 13) {
+        } else if (choice == 14) {
             bool invSaved = core::StorageManager::saveInventory(inventory, "inventory_save.json");
             bool recSaved = core::StorageManager::saveRecipes(recipeRepo, "recipes_save.json");
             if (invSaved && recSaved) {
@@ -221,7 +232,7 @@ int main() {
             } else {
                 std::cout << "Failed to save data.\n";
             }
-        } else if (choice == 14) {
+        } else if (choice == 15) {
             bool invLoaded = core::StorageManager::loadInventory(inventory, "inventory_save.json");
             bool recLoaded = core::StorageManager::loadRecipes(recipeRepo, "recipes_save.json");
 
@@ -230,7 +241,7 @@ int main() {
             } else {
                 std::cout << "Failed to load data (files may not exist).\n";
             }
-        } else if (choice == 15) {
+        } else if (choice == 16) {
             std::cout << "\n=== Recipe Builder ===\n";
 
             std::string title;
@@ -266,7 +277,7 @@ int main() {
 
                     double amount = readAmount("Amount required: ");
 
-                    std::cout << "Unit (g/ml): ";
+                    std::cout << "Unit (g/ml/pcs): ";
                     std::cin >> unit;
 
                     newRecipe.addRequirement(ingName, amount, unit);
@@ -291,9 +302,9 @@ int main() {
                 recipeRepo.addRecipe(newRecipe);
                 std::cout << "Recipe '" << title << "' successfully created and added!\n";
             }
-        } else if (choice == 16) {
-            recipeRepo.printAllRecipes();
         } else if (choice == 17) {
+            recipeRepo.printAllRecipes();
+        } else if (choice == 18) {
             auto cookable = recipeRepo.getCookableRecipes(inventory);
             if (cookable.empty()) {
                 std::cout << "\nNo recipes can be prepared with current inventory ingredients.\n";
@@ -305,11 +316,11 @@ int main() {
                             << recipe.getCalories() << " kcal)\n";
                 }
             }
-        } else if (choice == 18) {
+        } else if (choice == 19) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
-            std::cout << "Invalid option! Please choose between 1 and 18.\n";
+            std::cout << "Invalid option! Please choose between 1 and 19.\n";
         }
     }
     return 0;
