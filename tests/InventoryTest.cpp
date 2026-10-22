@@ -2,6 +2,7 @@
 #include "core/Inventory.h"
 #include "core/SolidIngredient.h"
 #include "core/LiquidIngredient.h"
+#include "core/CountableIngredient.h"
 
 TEST(InventoryTest, InitialStateIsEmpty) {
     core::Inventory inventory;
@@ -61,14 +62,16 @@ TEST(InventoryTest, PrintStatisticsCalculatesCorrectly) {
     inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 500.0, "2026-12-31"));
     inventory.addIngredient(std::make_unique<core::SolidIngredient>("Sugar", 200.0, "2026-12-31"));
     inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-10-15"));
+    inventory.addIngredient(std::make_unique<core::CountableIngredient>("Eggs", 10.0, "2026-11-15"));
 
     testing::internal::CaptureStdout();
     inventory.printStatistics();
     std::string output = testing::internal::GetCapturedStdout();
 
-    EXPECT_NE(output.find("Total Ingredients: 3"), std::string::npos);
+    EXPECT_NE(output.find("Total Ingredients: 4"), std::string::npos);
     EXPECT_NE(output.find("Solid Ingredients: 2 (Total Weight: 700 g)"), std::string::npos);
     EXPECT_NE(output.find("Liquid Ingredients: 1 (Total Volume: 1000 ml)"), std::string::npos);
+    EXPECT_NE(output.find("Countable Ingredients: 1 (Total Quantity: 10 pcs)"), std::string::npos);
 }
 
 TEST(InventoryTest, ConsumeRecipeSuccessfully) {

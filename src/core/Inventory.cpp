@@ -72,8 +72,10 @@ namespace core {
     void Inventory::printStatistics() const {
         double totalSolidWeight = 0.0;
         double totalLiquidVolume = 0.0;
+        double totalCountableQuantity = 0.0;
         size_t solidCount = 0;
         size_t liquidCount = 0;
+        size_t countableCount = 0;
 
         for (const auto &item: items) {
             if (item->getUnit() == "g") {
@@ -83,6 +85,11 @@ namespace core {
                 totalLiquidVolume += item->getAmount();
                 liquidCount++;
             }
+            else if (item->getUnit() == "pcs") {
+            totalCountableQuantity += item->getAmount();
+            countableCount++;
+        }
+
         }
 
         std::cout << "\n=================================\n";
@@ -91,6 +98,7 @@ namespace core {
         std::cout << "Total Ingredients: " << items.size() << '\n';
         std::cout << "Solid Ingredients: " << solidCount << " (Total Weight: " << totalSolidWeight << " g)\n";
         std::cout << "Liquid Ingredients: " << liquidCount << " (Total Volume: " << totalLiquidVolume << " ml)\n";
+        std::cout << "Countable Ingredients: " << countableCount << " (Total Quantity: " << totalCountableQuantity << " pcs)\n";
         std::cout << "=================================\n";
     }
 
