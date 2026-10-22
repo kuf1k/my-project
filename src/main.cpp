@@ -30,8 +30,9 @@ void displayMenu() {
     std::cout << "13. Save Inventory to File\n";
     std::cout << "14. Load Inventory from File\n";
     std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
-    std::cout << "16. Exit\n";
-    std::cout << "Choose an option (1-16): ";
+    std::cout << "16. View All Recipes (Recipe Book)\n";
+    std::cout << "17. Exit\n";
+    std::cout << "Choose an option (1-17): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -213,34 +214,48 @@ int main() {
 
                 core::Recipe newRecipe(title, prepTime, calories, instructions);
 
-                std::string response = "yes";
+                bool addingIngredients = true;
                 std::cout << "\n=== Adding Ingredients to Recipe ===\n";
-                while (response == "yes" || response == "y" || response == "Yes" || response == "YES") {
+                while (addingIngredients) {
                     std::string ingName, unit;
-                    double amount = 0.0;
 
                     std::cout << "Ingredient name: ";
                     std::getline(std::cin, ingName);
 
-                    amount = readAmount("Amount required: ");
+                    double amount = readAmount("Amount required: ");
 
                     std::cout << "Unit (g/ml): ";
                     std::cin >> unit;
 
                     newRecipe.addRequirement(ingName, amount, unit);
 
-                    std::cout << "Add another ingredient? (yes/no): ";
-                    std::cin >> response;
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    while (true) {
+                        std::string response;
+                        std::cout << "Add another ingredient? (yes/no): ";
+                        std::cin >> response;
+                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+                        if (response == "yes" || response == "y" || response == "Yes" || response == "YES") {
+                            addingIngredients = true;
+                            break;
+                        }
+                        if (response == "no" || response == "n" || response == "No" || response == "NO") {
+                            addingIngredients = false;
+                            break;
+                        }
+                        std::cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+                    }
                 }
                 recipeRepo.addRecipe(newRecipe);
                 std::cout << "Recipe '" << title << "' successfully created and added!\n";
             }
         } else if (choice == 16) {
+            recipeRepo.printAllRecipes();
+        } else if (choice == 17) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
-            std::cout << "Invalid option! Please choose between 1 and 16.\n";
+            std::cout << "Invalid option! Please choose between 1 and 17.\n";
         }
     }
     return 0;

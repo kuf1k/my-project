@@ -3,7 +3,9 @@
 
 namespace core {
     void RecipeRepository::printAllRecipes() const {
-        std::cout << "\n=== Recipe Book ===\n";
+        std::cout << "\n========================================\n";
+        std::cout << "             Recipe Book                \n";
+        std::cout << "========================================\n";
         if (recipes.empty()) {
             std::cout << "Your recipe book is empty!\n";
             return;
@@ -12,6 +14,19 @@ namespace core {
             std::cout << "- " << recipe.getTitle()
                     << " (" << recipe.getPrepTime() << " min, "
                     << recipe.getCalories() << " kcal)\n";
+            if (!recipe.getInstructions().empty()) {
+                std::cout << "  Instructions: " << recipe.getInstructions() << "\n";
+            }
+
+            const auto &requirements = recipe.getRequirements();
+            if (!requirements.empty()) {
+                std::cout << "  Ingredients required:\n";
+                for (const auto &req : requirements) {
+                    std::cout << "    - " << req.name << ": "
+                              << req.requiredAmount << " " << req.unit << "\n";
+                }
+            }
+            std::cout <<"========================================\n";
         }
     }
 
