@@ -31,8 +31,9 @@ void displayMenu() {
     std::cout << "14. Load Data from Files (Inventory & Recipes)\n";
     std::cout << "15. Add Custom Recipe (Recipe Builder)\n";
     std::cout << "16. View All Recipes (Recipe Book)\n";
-    std::cout << "17. Exit\n";
-    std::cout << "Choose an option (1-17): ";
+    std::cout << "17. View Cookable Recipes (What can I cook now?)\n";
+    std::cout << "18. Exit\n";
+    std::cout << "Choose an option (1-18): ";
 }
 
 double readAmount(const std::string &inputText) {
@@ -293,10 +294,22 @@ int main() {
         } else if (choice == 16) {
             recipeRepo.printAllRecipes();
         } else if (choice == 17) {
+            auto cookable = recipeRepo.getCookableRecipes(inventory);
+            if (cookable.empty()) {
+                std::cout << "\nNo recipes can be prepared with current inventory ingredients.\n";
+            } else {
+                std::cout << "\n=== Recipes You Can Cook Right Now ===\n";
+                for (const auto &recipe: cookable) {
+                    std::cout << "- " << recipe.getTitle()
+                            << " (" << recipe.getPrepTime() << " mins, "
+                            << recipe.getCalories() << " kcal)\n";
+                }
+            }
+        } else if (choice == 18) {
             std::cout << "Exiting NutriMesh. Goodbye!\n";
             running = false;
         } else {
-            std::cout << "Invalid option! Please choose between 1 and 17.\n";
+            std::cout << "Invalid option! Please choose between 1 and 18.\n";
         }
     }
     return 0;
