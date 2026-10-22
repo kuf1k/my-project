@@ -23,3 +23,32 @@ TEST(StorageManagerTest, SaveAndLoadInventorySuccessfully) {
 
     std::remove(testFileName.c_str());
 }
+
+TEST(StorageManagerTest, SaveAndLoadRecipesSuccessfully) {
+    std::string testFileName = "test_recipes_storage.json";
+
+    core::RecipeRepository originalRepo;
+    core::Recipe omelette("Omelette", 10, 250.0, "Beat eggs with milk and fry.");
+    omelette.addRequirement("Eggs", 3.0, "pcs");
+    omelette.addRequirement("Milk", 100.0, "ml");
+    originalRepo.addRecipe(omelette);
+
+    bool saveResult = core::StorageManager::saveRecipes(originalRepo, testFileName);
+    EXPECT_TRUE(saveResult);
+
+    core::RecipeRepository loadedRepo;
+    bool loadResult = core::StorageManager::loadRecipes(loadedRepo, testFileName);
+    EXPECT_TRUE(loadResult);
+
+    EXPECT_EQ(loadedRepo.getRecipesCount(), 1);
+    EXPECT_TRUE(loadedRepo.hasRecipe("Omelette"));
+
+    const auto &recipes = loadedRepo.getRecipes();
+    ASSERT_EQ(recipes.size(), 1);
+    EXPECT_EQ(recipes[0].getTitle(), "Omelette");
+    EXPECT_EQ(recipes[0].getPrepTime(), 10);
+    EXPECT_DOUBLE_EQ(recipes[0].getCalories(), 250.0);
+    EXPECT_EQ(recipes[0].getRequirements().size(), 2);
+
+    std::remove(testFileName.c_str());
+}
