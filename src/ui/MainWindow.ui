@@ -70,16 +70,30 @@
                             <attribute name="title">
                                 <string>🍳 What Can I Cook?</string>
                             </attribute>
-                            <layout class="QVBoxLayout" name="matcherLayout">
+                            <layout class="QVBoxLayout" name="matcherMainLayout">
                                 <item>
-                                    <widget class="QLabel" name="matcherPlaceholderLabel">
+                                    <widget class="QPushButton" name="findRecipesButton">
                                         <property name="text">
-                                            <string>Recipe Matcher feature coming soon...</string>
-                                        </property>
-                                        <property name="alignment">
-                                            <set>Qt::AlignCenter</set>
+                                            <string>🔍 Find Recipes I Can Cook Now</string>
                                         </property>
                                     </widget>
+                                </item>
+                                <item>
+                                    <layout class="QHBoxLayout" name="matcherContentLayout">
+                                        <item>
+                                            <widget class="QListWidget" name="cookableRecipesListWidget"/>
+                                        </item>
+                                        <item>
+                                            <widget class="QTextEdit" name="cookableRecipeDetailsTextEdit">
+                                                <property name="readOnly">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="placeholderText">
+                                                    <string>Click 'Find Recipes' and select a recipe to view details...</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
                                 </item>
                             </layout>
                         </widget>

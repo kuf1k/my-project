@@ -26,6 +26,10 @@ private slots:
 
     void onRecipeSelectionChanged();
 
+    void onFindCookableRecipesClicked();
+
+    void onCookableRecipeSelectionChanged();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
@@ -38,6 +42,8 @@ private:
     void updateInventoryTable();
 
     void updateRecipesList();
+
+    void displayRecipeDetails(const core::Recipe &recipe, class QTextEdit *targetTextEdit);
 };
 
 
