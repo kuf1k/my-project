@@ -31,7 +31,7 @@
                             <number>0</number>
                         </property>
 
-                        <!-- Pantry && Fridge -->
+                        <!-- Pantry & Fridge -->
                         <widget class="QWidget" name="tabPantry">
                             <attribute name="title">
                                 <string>🧊 Pantry &amp;&amp; Fridge</string>
@@ -111,16 +111,27 @@
                                             <widget class="QListWidget" name="cookableRecipesListWidget"/>
                                         </item>
                                         <item>
-                                            <widget class="QTextEdit" name="cookableRecipeDetailsTextEdit">
-                                                <property name="readOnly">
-                                                    <bool>true</bool>
-                                                </property>
-                                                <property name="placeholderText">
-                                                    <string>Click 'Find Recipes' and select a recipe to view
-                                                        details...
-                                                    </string>
-                                                </property>
-                                            </widget>
+                                            <layout class="QVBoxLayout" name="recipeDetailsRightLayout">
+                                                <item>
+                                                    <widget class="QTextEdit" name="cookableRecipeDetailsTextEdit">
+                                                        <property name="readOnly">
+                                                            <bool>true</bool>
+                                                        </property>
+                                                        <property name="placeholderText">
+                                                            <string>Click 'Find Recipes' and select a recipe to view
+                                                                details...
+                                                            </string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item>
+                                                    <widget class="QPushButton" name="cookRecipeButton">
+                                                        <property name="text">
+                                                            <string>🍳 Cook This Recipe (Consume Ingredients)</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                            </layout>
                                         </item>
                                     </layout>
                                 </item>

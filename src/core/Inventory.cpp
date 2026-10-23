@@ -6,9 +6,17 @@
 
 namespace core {
     void Inventory::addIngredient(std::unique_ptr<Ingredient> ingredient) {
-        if (ingredient) {
-            items.push_back(std::move(ingredient));
+        if (!ingredient) return;
+
+        for (auto &item: items) {
+            if (item->getName() == ingredient->getName() &&
+                item->getExpirationDate() == ingredient->getExpirationDate() &&
+                item->getUnit() == ingredient->getUnit()) {
+                item->setAmount(item->getAmount() + ingredient->getAmount());
+                return;
+            }
         }
+        items.push_back(std::move(ingredient));
     }
 
     void Inventory::printInventory(const std::string &currentDate) const {
@@ -84,12 +92,10 @@ namespace core {
             } else if (item->getUnit() == "ml") {
                 totalLiquidVolume += item->getAmount();
                 liquidCount++;
+            } else if (item->getUnit() == "pcs") {
+                totalCountableQuantity += item->getAmount();
+                countableCount++;
             }
-            else if (item->getUnit() == "pcs") {
-            totalCountableQuantity += item->getAmount();
-            countableCount++;
-        }
-
         }
 
         std::cout << "\n=================================\n";
@@ -98,7 +104,8 @@ namespace core {
         std::cout << "Total Ingredients: " << items.size() << '\n';
         std::cout << "Solid Ingredients: " << solidCount << " (Total Weight: " << totalSolidWeight << " g)\n";
         std::cout << "Liquid Ingredients: " << liquidCount << " (Total Volume: " << totalLiquidVolume << " ml)\n";
-        std::cout << "Countable Ingredients: " << countableCount << " (Total Quantity: " << totalCountableQuantity << " pcs)\n";
+        std::cout << "Countable Ingredients: " << countableCount << " (Total Quantity: " << totalCountableQuantity <<
+                " pcs)\n";
         std::cout << "=================================\n";
     }
 

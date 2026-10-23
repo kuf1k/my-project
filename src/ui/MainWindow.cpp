@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->generateShoppingListButton, &QPushButton::clicked, this, &MainWindow::onGenerateShoppingListClicked);
     connect(ui->exportShoppingListButton, &QPushButton::clicked, this, &MainWindow::onExportShoppingListClicked);
 
+    connect(ui->cookRecipeButton, &QPushButton::clicked, this, &MainWindow::onCookRecipeClicked);
+
     setupInventoryTable();
     setupShoppingTable();
     loadData();
@@ -227,6 +229,55 @@ void MainWindow::onCookableRecipeSelectionChanged() {
             displayRecipeDetails(recipe, ui->cookableRecipeDetailsTextEdit);
             break;
         }
+    }
+}
+
+void MainWindow::onCookRecipeClicked() {
+    QListWidgetItem *selectedItem = ui->cookableRecipesListWidget->currentItem();
+    if (!selectedItem) {
+        QMessageBox::warning(this, "Select Recipe", "Please select a cookable recipe first!");
+        return;
+    }
+
+    std::string title = selectedItem->text().toStdString();
+    const core::Recipe *targetRecipe = nullptr;
+
+    for (const auto &recipe: recipeRepo.getRecipes()) {
+        if (recipe.getTitle() == title) {
+            targetRecipe = &recipe;
+            break;
+        }
+    }
+
+    if (!targetRecipe) return;
+
+    if (inventory.consumeRecipe(*targetRecipe)) {
+        core::StorageManager::saveInventory(inventory, "inventory_save.json");
+
+        updateInventoryTable();
+
+        ui->cookableRecipesListWidget->clear();
+        ui->cookableRecipeDetailsTextEdit->clear();
+
+        auto cookableRecipes = recipeRepo.getCookableRecipes(inventory);
+        if (!cookableRecipes.empty()) {
+            int currentIndex = ui->matcherSortComboBox->currentIndex();
+            if (currentIndex < 0) currentIndex = 0;
+            auto sortOption = static_cast<core::RecipeSortOption>(currentIndex);
+            cookableRecipes = core::RecipeRepository::sortRecipes(cookableRecipes, sortOption);
+
+            for (const auto &recipe: cookableRecipes) {
+                ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+            }
+        }
+
+        QMessageBox::information(this, "Bon Appétit!",
+                                 QString(
+                                     "You successfully cooked '%1'! Required ingredients have been deducted from your pantry.")
+                                 .arg(QString::fromStdString(title)));
+    } else {
+        QMessageBox::critical(this, "Error",
+                              "Not enough ingredients in your pantry to cook this recipe!");
     }
 }
 
