@@ -337,6 +337,43 @@ int main() {
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
+
+    app.setStyleSheet(
+        "QMainWindow { background-color: #1e1e1e; color: #ffffff; }"
+        "QTabWidget::pane { border: 1px solid #333333; background: #1e1e1e; }"
+        "QTabBar::tab { background: #2d2d2d; color: #b0b0b0; padding: 8px 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; }"
+        "QTabBar::tab:selected { background: #3c3c3c; color: #ffffff; font-weight: bold; }"
+
+        "QPushButton {"
+        "    background-color: #333333;"
+        "    color: #ffffff;"
+        "    border: 1px solid #444444;"
+        "    border-radius: 6px;"
+        "    padding: 6px 14px;"
+        "    font-weight: 500;"
+        "}"
+        "QPushButton:hover { background-color: #3e3e3e; border-color: #555555; }"
+        "QPushButton:pressed { background-color: #2a2a2a; }"
+
+        "#addIngredientButton, #cookRecipeButton, #addRecipeButton, #findRecipesButton, #generateShoppingListButton {"
+        "    background-color: #2b5b84;"
+        "    border-color: #346c9e;"
+        "}"
+        "#addIngredientButton:hover, #cookRecipeButton:hover, #addRecipeButton:hover, #findRecipesButton:hover, #generateShoppingListButton:hover {"
+        "    background-color: #346c9e;"
+        "}"
+        "#addIngredientButton:pressed, #cookRecipeButton:pressed, #addRecipeButton:pressed, #findRecipesButton:pressed, #generateShoppingListButton:pressed {"
+        "    background-color: #23496c;"
+        "}"
+
+        "#removeExpiredButton {"
+        "    background-color: #6b2e2e;"
+        "    border-color: #843838;"
+        "}"
+        "#removeExpiredButton:hover { background-color: #843838; }"
+        "#removeExpiredButton:pressed { background-color: #522323; }"
+    );
+
     MainWindow window;
     window.show();
 

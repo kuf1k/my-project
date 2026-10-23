@@ -6,6 +6,17 @@
 #include <QMessageBox>
 #include <QDate>
 
+
+static void applyDialogButtonStyles(QPushButton *primaryBtn, QPushButton *cancelBtn) {
+    if (primaryBtn) {
+        primaryBtn->setStyleSheet("background-color: #2b5b84; color: white; border-radius: 6px; padding: 6px 14px; font-weight: 500;");
+    }
+    if (cancelBtn) {
+        cancelBtn->setStyleSheet("background-color: #6b2e2e; color: white; border-radius: 6px; padding: 6px 14px; font-weight: 500;");
+    }
+}
+
+
 AddIngredientDialog::AddIngredientDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::AddIngredientDialog) {
     ui->setupUi(this);
@@ -23,6 +34,9 @@ AddIngredientDialog::AddIngredientDialog(QWidget *parent)
     connect(ui->cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
     onTypeChanged(0);
+
+    ui->addButton->setStyleSheet("background-color: #2b5b84; color: white; border-radius: 6px; padding: 6px 14px;");
+    ui->cancelButton->setStyleSheet("background-color: #6b2e2e; color: white; border-radius: 6px; padding: 6px 14px;");
 }
 
 AddIngredientDialog::~AddIngredientDialog() {
@@ -73,3 +87,5 @@ void AddIngredientDialog::onAddClicked() {
 std::unique_ptr<core::Ingredient> AddIngredientDialog::getCreatedIngredient() {
     return std::move(createdIngredient);
 }
+
+

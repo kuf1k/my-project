@@ -11,6 +11,8 @@ AddRecipeDialog::AddRecipeDialog(QWidget *parent)
     setWindowTitle("➕ Add Custom Recipe");
     resize(500, 550);
     setupUi();
+
+
 }
 
 void AddRecipeDialog::setupUi() {
@@ -56,6 +58,7 @@ void AddRecipeDialog::setupUi() {
     reqUnitComboBox->addItems({"g", "ml", "pcs"});
 
     addReqButton = new QPushButton("➕ Add Ingredient", this);
+    addReqButton->setStyleSheet("background-color: #2b5b84; color: white; border-radius: 6px; padding: 6px 14px;");
 
     reqInputLayout->addWidget(reqNameEdit, 2);
     reqInputLayout->addWidget(reqAmountSpinBox, 1);
@@ -70,11 +73,15 @@ void AddRecipeDialog::setupUi() {
     mainLayout->addWidget(requirementsTable);
 
     removeReqButton = new QPushButton("🗑️ Remove Selected Ingredient", this);
+    removeReqButton->setStyleSheet("background-color: #6b2e2e; color: white; border-radius: 6px; padding: 6px 14px;");
     mainLayout->addWidget(removeReqButton);
 
     auto *buttonLayout = new QHBoxLayout();
     auto *saveButton = new QPushButton("💾 Save Recipe", this);
     auto *cancelButton = new QPushButton("Cancel", this);
+
+    saveButton->setObjectName("primaryButton");
+    cancelButton->setObjectName("cancelButton");
 
     buttonLayout->addStretch();
     buttonLayout->addWidget(cancelButton);
