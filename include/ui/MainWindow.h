@@ -30,6 +30,10 @@ private slots:
 
     void onCookableRecipeSelectionChanged();
 
+    void onRecipesSortChanged(int index);
+
+    void onMatcherSortChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
@@ -43,7 +47,12 @@ private:
 
     void updateRecipesList();
 
+    void setupSortComboBoxes();
+
+    void sortRecipes(std::vector<core::Recipe> &recipes, int sortOption);
+
     void displayRecipeDetails(const core::Recipe &recipe, class QTextEdit *targetTextEdit);
+
 };
 
 
