@@ -5,6 +5,13 @@
 #include "core/Inventory.h"
 
 namespace core {
+    enum class RecipeSortOption {
+        ByNameAsc,
+        ByPrepTimeAsc,
+        ByCaloriesAsc,
+        ByCaloriesDesc
+    };
+
     class RecipeRepository {
         std::vector<Recipe> recipes;
 
@@ -22,6 +29,8 @@ namespace core {
         bool hasRecipe(const std::string &title) const;
 
         const std::vector<Recipe> &getRecipes() const;
+
+        std::vector<Recipe> getSortedRecipes(RecipeSortOption option) const;
     };
 }
 

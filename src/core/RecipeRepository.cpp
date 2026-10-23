@@ -62,4 +62,32 @@ namespace core {
         }
         recipes.push_back(recipe);
     }
+    std::vector<Recipe> RecipeRepository::getSortedRecipes(RecipeSortOption option) const {
+        std::vector<Recipe> sorted = recipes;
+
+        switch (option) {
+            case RecipeSortOption::ByNameAsc:
+                std::sort(sorted.begin(), sorted.end(), [](const Recipe &a, const Recipe &b) {
+                    return a.getTitle() < b.getTitle();
+                });
+                break;
+            case RecipeSortOption::ByPrepTimeAsc:
+                std::sort(sorted.begin(), sorted.end(), [](const Recipe &a, const Recipe &b) {
+                    return a.getPrepTime() < b.getPrepTime();
+                });
+                break;
+            case RecipeSortOption::ByCaloriesAsc:
+                std::sort(sorted.begin(), sorted.end(), [](const Recipe &a, const Recipe &b) {
+                    return a.getCalories() < b.getCalories();
+                });
+                break;
+            case RecipeSortOption::ByCaloriesDesc:
+                std::sort(sorted.begin(), sorted.end(), [](const Recipe &a, const Recipe &b) {
+                    return a.getCalories() > b.getCalories();
+                });
+                break;
+        }
+
+        return sorted;
+    }
 }
