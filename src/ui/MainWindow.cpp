@@ -1,11 +1,15 @@
 #include "ui/MainWindow.h"
 #include "ui_MainWindow.h"
 #include "core/StorageManager.h"
+#include "core/DateUtils.h"
 #include <QHeaderView>
+#include <QColor>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
 
     setupInventoryTable();
     loadData();
@@ -32,12 +36,35 @@ void MainWindow::updateInventoryTable() {
     ui->inventoryTable->setRowCount(0);
     const auto &items = inventory.getItems();
 
+    std::string currentDate = "2026-10-23";
+
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->inventoryTable->insertRow(i);
-        ui->inventoryTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i]->getName())));
-        ui->inventoryTable->setItem(i, 1, new QTableWidgetItem(QString::number(items[i]->getAmount())));
-        ui->inventoryTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i]->getUnit())));
-        ui->inventoryTable->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(items[i]->getExpirationDate())));
+
+        auto *nameItem = new QTableWidgetItem(QString::fromStdString(items[i]->getName()));
+        auto *amountItem = new QTableWidgetItem(QString::number(items[i]->getAmount()));
+        auto *unitItem = new QTableWidgetItem(QString::fromStdString(items[i]->getUnit()));
+        auto *expItem = new QTableWidgetItem(QString::fromStdString(items[i]->getExpirationDate()));
+
+        int daysLeft = core::DateUtils::getDaysUntil(items[i]->getExpirationDate(), currentDate);
+
+        QColor rowColor;
+        if (daysLeft < 0) {
+            rowColor = QColor(120, 40, 40);
+        } else if (daysLeft <= 3) {
+            rowColor = QColor(110, 90, 30);
+        } else {
+            rowColor = QColor(35, 45, 35);
+        }
+        nameItem->setBackground(rowColor);
+        amountItem->setBackground(rowColor);
+        unitItem->setBackground(rowColor);
+        expItem->setBackground(rowColor);
+
+        ui->inventoryTable->setItem(i, 0, nameItem);
+        ui->inventoryTable->setItem(i, 1, amountItem);
+        ui->inventoryTable->setItem(i, 2, unitItem);
+        ui->inventoryTable->setItem(i, 3, expItem);
     }
 }
 
