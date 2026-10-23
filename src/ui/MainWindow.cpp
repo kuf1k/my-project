@@ -11,6 +11,7 @@
 #include <QComboBox>
 #include <QRegularExpression>
 #include <QFileDialog>
+#include <QStandardPaths>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
     connect(ui->removeExpiredButton, &QPushButton::clicked, this, &MainWindow::onRemoveExpiredClicked);
-    // <-- Підключення!
+    connect(ui->exportInventoryButton, &QPushButton::clicked, this, &MainWindow::onExportInventoryClicked);
     connect(ui->recipesListWidget, &QListWidget::itemSelectionChanged, this, &MainWindow::onRecipeSelectionChanged);
 
     connect(ui->findRecipesButton, &QPushButton::clicked, this, &MainWindow::onFindCookableRecipesClicked);
@@ -300,6 +301,35 @@ void MainWindow::onRemoveExpiredClicked() {
                              .arg(removedCount));
 }
 
+void MainWindow::onExportInventoryClicked() {
+    if (inventory.getItemsCount() == 0) {
+        QMessageBox::warning(this, "Export Warning", "Your pantry is empty! Nothing to export.");
+        return;
+    }
+
+    QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
+                          + "/inventory_report.txt";
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    "Export Inventory Report",
+                                                    defaultPath,
+                                                    "Text Files (*.txt);;All Files (*)");
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    std::string currentDate = "2026-10-23";
+    core::FileExporter exporter("Pantry Inventory Report", fileName.toStdString());
+
+    if (exporter.exportData(inventory, currentDate)) {
+        QMessageBox::information(this, "Success",
+                                 "Inventory report successfully exported to " + fileName);
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to export inventory report to file.");
+    }
+}
+
 void MainWindow::onGenerateShoppingListClicked() {
     QString selectedTitle = ui->shoppingRecipeComboBox->currentText();
     if (selectedTitle.isEmpty()) {
@@ -345,9 +375,12 @@ void MainWindow::onExportShoppingListClicked() {
         return;
     }
 
+    QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)
+                          + "/shopping_list.txt";
+
     QString fileName = QFileDialog::getSaveFileName(this,
                                                     "Export Shopping List",
-                                                    "shopping_list.txt",
+                                                    defaultPath,
                                                     "Text Files (*.txt);;All Files (*)");
 
     if (fileName.isEmpty()) {

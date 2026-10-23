@@ -57,6 +57,13 @@
                                             </widget>
                                         </item>
                                         <item>
+                                            <widget class="QPushButton" name="exportInventoryButton">
+                                                <property name="text">
+                                                    <string>📄 Export Inventory Report</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
                                             <widget class="QPushButton" name="refreshButton">
                                                 <property name="text">
                                                     <string>🔄 Refresh Inventory</string>

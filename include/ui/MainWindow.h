@@ -30,6 +30,8 @@ private slots:
 
     void onRemoveExpiredClicked();
 
+    void onExportInventoryClicked();
+
     void onRecipeSelectionChanged();
 
     void onFindCookableRecipesClicked();
