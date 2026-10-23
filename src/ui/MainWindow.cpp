@@ -1,6 +1,7 @@
 #include "ui/MainWindow.h"
 #include "ui_MainWindow.h"
 #include "ui/AddIngredientDialog.h"
+#include "ui/AddRecipeDialog.h"
 #include "core/StorageManager.h"
 #include "core/DateUtils.h"
 #include "core/FileExporter.h"
@@ -38,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->exportShoppingListButton, &QPushButton::clicked, this, &MainWindow::onExportShoppingListClicked);
 
     connect(ui->cookRecipeButton, &QPushButton::clicked, this, &MainWindow::onCookRecipeClicked);
+    connect(ui->addRecipeButton, &QPushButton::clicked, this, &MainWindow::onAddRecipeClicked);
+    // <-- Підключено кнопку!
 
     setupInventoryTable();
     setupShoppingTable();
@@ -280,6 +283,28 @@ void MainWindow::onCookRecipeClicked() {
     } else {
         QMessageBox::critical(this, "Error",
                               "Not enough ingredients in your pantry to cook this recipe!");
+    }
+}
+
+void MainWindow::onAddRecipeClicked() {
+    AddRecipeDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        core::Recipe newRecipe = dialog.getCreatedRecipe();
+
+        if (recipeRepo.hasRecipe(newRecipe.getTitle())) {
+            QMessageBox::warning(this, "Duplicate Recipe",
+                                 QString("Recipe '%1' already exists!").arg(
+                                     QString::fromStdString(newRecipe.getTitle())));
+            return;
+        }
+
+        recipeRepo.addRecipe(newRecipe);
+        core::StorageManager::saveRecipes(recipeRepo, "recipes_save.json");
+
+        updateRecipesList();
+        updateShoppingRecipeComboBox();
+
+        QMessageBox::information(this, "Success", "Custom recipe added successfully!");
     }
 }
 

@@ -177,6 +177,13 @@
                                         <item>
                                             <widget class="QListWidget" name="recipesListWidget"/>
                                         </item>
+                                        <item>
+                                            <widget class="QPushButton" name="addRecipeButton">
+                                                <property name="text">
+                                                    <string>➕ Add Custom Recipe</string>
+                                                </property>
+                                            </widget>
+                                        </item>
                                     </layout>
                                 </item>
                                 <item>

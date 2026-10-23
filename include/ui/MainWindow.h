@@ -48,6 +48,8 @@ private slots:
 
     void onMatcherSortChanged(int index);
 
+    void onAddRecipeClicked();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
