@@ -4,7 +4,11 @@
 #include "core/RecipeRepository.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+
+namespace Ui {
+    class MainWindow;
+}
+
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
@@ -12,10 +16,13 @@ class MainWindow : public QMainWindow {
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
     ~MainWindow();
 
 private slots:
     void onRefreshInventoryClicked();
+
+    void onAddIngredientClicked();
 
 private:
     Ui::MainWindow *ui;
@@ -23,7 +30,9 @@ private:
     core::RecipeRepository recipeRepo;
 
     void loadData();
+
     void setupInventoryTable();
+
     void updateInventoryTable();
 };
 

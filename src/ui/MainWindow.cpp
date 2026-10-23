@@ -1,15 +1,18 @@
 #include "ui/MainWindow.h"
 #include "ui_MainWindow.h"
+#include "ui/AddIngredientDialog.h"
 #include "core/StorageManager.h"
 #include "core/DateUtils.h"
 #include <QHeaderView>
 #include <QColor>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
+    connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
 
     setupInventoryTable();
     loadData();
@@ -71,4 +74,19 @@ void MainWindow::updateInventoryTable() {
 void MainWindow::onRefreshInventoryClicked() {
     loadData();
     updateInventoryTable();
+}
+
+void MainWindow::onAddIngredientClicked() {
+    AddIngredientDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        auto newIngredient = dialog.getCreatedIngredient();
+        if (newIngredient) {
+            inventory.addIngredient(std::move(newIngredient));
+
+            core::StorageManager::saveInventory(inventory, "inventory_save.json");
+
+            updateInventoryTable();
+            QMessageBox::information(this, "Success", "Ingredient added successfully!");
+        }
+    }
 }
