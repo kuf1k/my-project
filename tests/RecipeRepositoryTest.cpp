@@ -47,3 +47,25 @@ TEST(RecipeRepositoryTest, PreventDuplicateRecipes) {
     repo.addRecipe(pancakes);
     EXPECT_EQ(repo.getRecipesCount(),1);
 }
+
+TEST(RecipeRepositoryTest, GetSortedRecipesByNameAndCalories) {
+    core::RecipeRepository repo;
+
+    core::Recipe r1("Pancakes", 20, 400.0, "Mix and fry");
+    core::Recipe r2("Apple Pie", 50, 250.0, "Bake in oven");
+    core::Recipe r3("Omelette", 10, 150.0, "Whisk and fry");
+
+    repo.addRecipe(r1);
+    repo.addRecipe(r2);
+    repo.addRecipe(r3);
+
+    auto sortedByName = repo.getSortedRecipes(core::RecipeSortOption::ByNameAsc);
+    EXPECT_EQ(sortedByName[0].getTitle(), "Apple Pie");
+    EXPECT_EQ(sortedByName[1].getTitle(), "Omelette");
+    EXPECT_EQ(sortedByName[2].getTitle(), "Pancakes");
+
+    auto sortedByCalories = repo.getSortedRecipes(core::RecipeSortOption::ByCaloriesAsc);
+    EXPECT_EQ(sortedByCalories[0].getTitle(), "Omelette");
+    EXPECT_EQ(sortedByCalories[1].getTitle(), "Apple Pie");
+    EXPECT_EQ(sortedByCalories[2].getTitle(), "Pancakes");
+}
