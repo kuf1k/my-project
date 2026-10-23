@@ -36,4 +36,31 @@ namespace core {
     std::string FileExporter::getFilePath() const {
         return filePath;
     }
+
+    bool FileExporter::exportShoppingListToTxt(const ShoppingList &shoppingList, const std::string &filename) {
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Failed to open file for shopping list export: " << filename << '\n';
+            return false;
+        }
+
+        outFile << "========================================\n";
+        outFile << "          NUTRIMESH SHOPPING LIST       \n";
+        outFile << "========================================\n\n";
+
+        const auto &items = shoppingList.getItems();
+        if (items.empty()) {
+            outFile << "Your shopping list is empty!\n";
+        } else {
+            for (const auto &item : items) {
+                outFile << "[ ] " << item.name << " — "
+                        << item.amountToBuy << " " << item.unit << "\n";
+            }
+        }
+
+        outFile << "\n========================================\n";
+        outFile.close();
+        return true;
+    }
+
 }
