@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QListWidgetItem>
 #include <QRegularExpression>
+#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -22,6 +23,11 @@ MainWindow::MainWindow(QWidget *parent)
             &MainWindow::onCookableRecipeSelectionChanged);
 
     connect(ui->generateShoppingListButton, &QPushButton::clicked, this, &MainWindow::onGenerateShoppingListClicked);
+
+    connect(ui->recipesSortComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onRecipesSortChanged);
+    connect(ui->matcherSortComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onMatcherSortChanged);
 
     setupInventoryTable();
     setupShoppingTable();
@@ -100,9 +106,14 @@ void MainWindow::updateInventoryTable() {
 
 void MainWindow::updateRecipesList() {
     ui->recipesListWidget->clear();
-    const auto &recipes = recipeRepo.getRecipes();
 
-    for (const auto &recipe: recipes) {
+    int currentIndex = ui->recipesSortComboBox->currentIndex();
+    if (currentIndex < 0) currentIndex = 0;
+    auto sortOption = static_cast<core::RecipeSortOption>(currentIndex);
+
+    auto sortedRecipes = recipeRepo.getSortedRecipes(sortOption);
+
+    for (const auto &recipe: sortedRecipes) {
         ui->recipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
     }
 }
@@ -173,6 +184,33 @@ void MainWindow::onFindCookableRecipesClicked() {
         return;
     }
 
+    int currentIndex = ui->matcherSortComboBox->currentIndex();
+    if (currentIndex < 0) currentIndex = 0;
+    auto sortOption = static_cast<core::RecipeSortOption>(currentIndex);
+
+    switch (sortOption) {
+        case core::RecipeSortOption::ByNameAsc:
+            std::sort(cookableRecipes.begin(), cookableRecipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
+                return a.getTitle() < b.getTitle();
+            });
+            break;
+        case core::RecipeSortOption::ByPrepTimeAsc:
+            std::sort(cookableRecipes.begin(), cookableRecipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
+                return a.getPrepTime() < b.getPrepTime();
+            });
+            break;
+        case core::RecipeSortOption::ByCaloriesAsc:
+            std::sort(cookableRecipes.begin(), cookableRecipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
+                return a.getCalories() < b.getCalories();
+            });
+            break;
+        case core::RecipeSortOption::ByCaloriesDesc:
+            std::sort(cookableRecipes.begin(), cookableRecipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
+                return a.getCalories() > b.getCalories();
+            });
+            break;
+    }
+
     for (const auto &recipe: cookableRecipes) {
         ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
     }
@@ -192,6 +230,14 @@ void MainWindow::onCookableRecipeSelectionChanged() {
             break;
         }
     }
+}
+
+void MainWindow::onRecipesSortChanged(int /*index*/) {
+    updateRecipesList();
+}
+
+void MainWindow::onMatcherSortChanged(int /*index*/) {
+    onFindCookableRecipesClicked();
 }
 
 void MainWindow::onGenerateShoppingListClicked() {

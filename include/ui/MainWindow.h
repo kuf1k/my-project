@@ -35,6 +35,10 @@ private slots:
 
     void onGenerateShoppingListClicked();
 
+    void onRecipesSortChanged(int index);
+
+    void onMatcherSortChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;

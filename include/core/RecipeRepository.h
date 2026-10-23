@@ -31,6 +31,8 @@ namespace core {
         const std::vector<Recipe> &getRecipes() const;
 
         std::vector<Recipe> getSortedRecipes(RecipeSortOption option) const;
+
+        static std::vector<Recipe> sortRecipes(const std::vector<Recipe> &recipesToSort, RecipeSortOption option);
     };
 }
 

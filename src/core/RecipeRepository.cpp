@@ -21,12 +21,12 @@ namespace core {
             const auto &requirements = recipe.getRequirements();
             if (!requirements.empty()) {
                 std::cout << "  Ingredients required:\n";
-                for (const auto &req : requirements) {
+                for (const auto &req: requirements) {
                     std::cout << "    - " << req.name << ": "
-                              << req.requiredAmount << " " << req.unit << "\n";
+                            << req.requiredAmount << " " << req.unit << "\n";
                 }
             }
-            std::cout <<"========================================\n";
+            std::cout << "========================================\n";
         }
     }
 
@@ -62,9 +62,10 @@ namespace core {
         }
         recipes.push_back(recipe);
     }
-    std::vector<Recipe> RecipeRepository::getSortedRecipes(RecipeSortOption option) const {
-        std::vector<Recipe> sorted = recipes;
 
+    std::vector<Recipe>
+    RecipeRepository::sortRecipes(const std::vector<Recipe> &recipesToSort, RecipeSortOption option) {
+        std::vector<Recipe> sorted = recipesToSort;
         switch (option) {
             case RecipeSortOption::ByNameAsc:
                 std::sort(sorted.begin(), sorted.end(), [](const Recipe &a, const Recipe &b) {
@@ -87,7 +88,10 @@ namespace core {
                 });
                 break;
         }
-
         return sorted;
+    }
+
+    std::vector<Recipe> RecipeRepository::getSortedRecipes(RecipeSortOption option) const {
+        return sortRecipes(recipes, option);
     }
 }

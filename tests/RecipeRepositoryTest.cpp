@@ -68,4 +68,10 @@ TEST(RecipeRepositoryTest, GetSortedRecipesByNameAndCalories) {
     EXPECT_EQ(sortedByCalories[0].getTitle(), "Omelette");
     EXPECT_EQ(sortedByCalories[1].getTitle(), "Apple Pie");
     EXPECT_EQ(sortedByCalories[2].getTitle(), "Pancakes");
+
+    std::vector customList = { r1, r2 };
+    auto sortedByPrepTime = core::RecipeRepository::sortRecipes(customList, core::RecipeSortOption::ByPrepTimeAsc);
+
+    EXPECT_EQ(sortedByPrepTime[0].getTitle(), "Pancakes");
+    EXPECT_EQ(sortedByPrepTime[1].getTitle(), "Apple Pie");
 }
