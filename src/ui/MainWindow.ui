@@ -6,15 +6,15 @@
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>800</width>
-                <height>500</height>
+                <width>900</width>
+                <height>600</height>
             </rect>
         </property>
         <property name="windowTitle">
             <string>NutriMesh - Smart Kitchen Assistant</string>
         </property>
         <widget class="QWidget" name="centralwidget">
-            <layout class="QVBoxLayout" name="verticalLayout">
+            <layout class="QVBoxLayout" name="mainLayout">
                 <item>
                     <widget class="QLabel" name="titleLabel">
                         <property name="font">
@@ -24,7 +24,7 @@
                             </font>
                         </property>
                         <property name="text">
-                            <string>My Kitchen Inventory</string>
+                            <string>NutriMesh - Smart Kitchen Assistant</string>
                         </property>
                         <property name="alignment">
                             <set>Qt::AlignCenter</set>
@@ -32,25 +32,94 @@
                     </widget>
                 </item>
                 <item>
-                    <widget class="QTableWidget" name="inventoryTable"/>
-                </item>
-                <item>
-                    <layout class="QHBoxLayout" name="actionsLayout">
-                        <item>
-                            <widget class="QPushButton" name="addIngredientButton">
-                                <property name="text">
-                                    <string>➕ Add Ingredient</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <widget class="QPushButton" name="refreshButton">
-                                <property name="text">
-                                    <string>🔄 Refresh Data</string>
-                                </property>
-                            </widget>
-                        </item>
-                    </layout>
+                    <widget class="QTabWidget" name="mainTabWidget">
+                        <property name="currentIndex">
+                            <number>0</number>
+                        </property>
+                        <!-- Pantry & Fridge -->
+                        <widget class="QWidget" name="tabPantry">
+                            <attribute name="title">
+                                <string>🧊 Pantry &amp;&amp; Fridge</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="pantryLayout">
+                                <item>
+                                    <widget class="QTableWidget" name="inventoryTable"/>
+                                </item>
+                                <item>
+                                    <layout class="QHBoxLayout" name="actionsLayout">
+                                        <item>
+                                            <widget class="QPushButton" name="addIngredientButton">
+                                                <property name="text">
+                                                    <string>➕ Add Ingredient</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="refreshButton">
+                                                <property name="text">
+                                                    <string>🔄 Refresh Data</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                            </layout>
+                        </widget>
+                        <!-- What Can I Cook? -->
+                        <widget class="QWidget" name="tabMatcher">
+                            <attribute name="title">
+                                <string>🍳 What Can I Cook?</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="matcherLayout">
+                                <item>
+                                    <widget class="QLabel" name="matcherPlaceholderLabel">
+                                        <property name="text">
+                                            <string>Recipe Matcher feature coming soon...</string>
+                                        </property>
+                                        <property name="alignment">
+                                            <set>Qt::AlignCenter</set>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </widget>
+                        <!-- Recipe Book -->
+                        <widget class="QWidget" name="tabRecipes">
+                            <attribute name="title">
+                                <string>📖 Recipe Book</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="recipesLayout">
+                                <item>
+                                    <widget class="QLabel" name="recipesPlaceholderLabel">
+                                        <property name="text">
+                                            <string>Recipe Book feature coming soon...</string>
+                                        </property>
+                                        <property name="alignment">
+                                            <set>Qt::AlignCenter</set>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </widget>
+                        <!-- Shopping List -->
+                        <widget class="QWidget" name="tabShopping">
+                            <attribute name="title">
+                                <string>🛒 Shopping List</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="shoppingLayout">
+                                <item>
+                                    <widget class="QLabel" name="shoppingPlaceholderLabel">
+                                        <property name="text">
+                                            <string>Shopping List feature coming soon...</string>
+                                        </property>
+                                        <property name="alignment">
+                                            <set>Qt::AlignCenter</set>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </widget>
+                    </widget>
                 </item>
             </layout>
         </widget>

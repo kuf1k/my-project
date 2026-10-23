@@ -19,7 +19,7 @@ namespace core {
             } else if (item->getUnit() == "ml") {
                 itemObj["type"] = "Liquid";
             } else if (item->getUnit() == "pcs") {
-                itemObj["type"] == "Countable";
+                itemObj["type"] = "Countable";
             }
             itemObj["name"] = item->getName();
             itemObj["amount"] = item->getAmount();
@@ -57,10 +57,10 @@ namespace core {
         inventory.clear();
 
         for (const auto &itemObj: jArray) {
-            std::string type = itemObj["type"];
-            std::string name = itemObj["name"];
-            double amount = itemObj["amount"];
-            std::string expirationDate = itemObj["expirationDate"];
+            std::string type = itemObj.value("type", "Countable");
+            std::string name = itemObj.value("name", "");
+            double amount = itemObj.value("amount", 0.0);
+            std::string expirationDate = itemObj.value("expirationDate", "");
 
             if (type == "Solid") {
                 inventory.addIngredient(std::make_unique<SolidIngredient>(name, amount, expirationDate));
