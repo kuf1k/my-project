@@ -3,12 +3,14 @@
 #include "ui/AddIngredientDialog.h"
 #include "core/StorageManager.h"
 #include "core/DateUtils.h"
+#include "core/FileExporter.h"
 #include <QHeaderView>
 #include <QColor>
 #include <QMessageBox>
 #include <QListWidgetItem>
 #include <QComboBox>
 #include <QRegularExpression>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -30,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
             &MainWindow::onMatcherSortChanged);
 
     connect(ui->generateShoppingListButton, &QPushButton::clicked, this, &MainWindow::onGenerateShoppingListClicked);
+    connect(ui->exportShoppingListButton, &QPushButton::clicked, this, &MainWindow::onExportShoppingListClicked);
 
     setupInventoryTable();
     setupShoppingTable();
@@ -127,7 +130,6 @@ void MainWindow::updateRecipesList() {
     if (currentIndex < 0) currentIndex = 0;
     auto sortOption = static_cast<core::RecipeSortOption>(currentIndex);
 
-    // Отримуємо вже відсортовані рецепти з ядра core
     auto sortedRecipes = recipeRepo.getSortedRecipes(sortOption);
 
     for (const auto &recipe: sortedRecipes) {
@@ -205,7 +207,6 @@ void MainWindow::onFindCookableRecipesClicked() {
     if (currentIndex < 0) currentIndex = 0;
     auto sortOption = static_cast<core::RecipeSortOption>(currentIndex);
 
-    // Вся логіка сортування відфільтрованого списку тепер викликається з ядра core!
     cookableRecipes = core::RecipeRepository::sortRecipes(cookableRecipes, sortOption);
 
     for (const auto &recipe: cookableRecipes) {
@@ -264,6 +265,30 @@ void MainWindow::onGenerateShoppingListClicked() {
         ui->shoppingTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i].name)));
         ui->shoppingTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(items[i].amountToBuy)));
         ui->shoppingTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].unit)));
+    }
+}
+
+void MainWindow::onExportShoppingListClicked() {
+    if (shoppingList.isEmpty()) {
+        QMessageBox::warning(this, "Export Warning",
+                             "The shopping list is empty! Generate a shopping list first.");
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    "Export Shopping List",
+                                                    "shopping_list.txt",
+                                                    "Text Files (*.txt);;All Files (*)");
+
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    if (core::FileExporter::exportShoppingListToTxt(shoppingList, fileName.toStdString())) {
+        QMessageBox::information(this, "Success",
+                                 "Shopping list successfully exported to " + fileName);
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to export shopping list to file.");
     }
 }
 

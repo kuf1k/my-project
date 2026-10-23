@@ -36,6 +36,8 @@ private slots:
 
     void onGenerateShoppingListClicked();
 
+    void onExportShoppingListClicked();
+
     void onRecipesSortChanged(int index);
 
     void onMatcherSortChanged(int index);
