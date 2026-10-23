@@ -68,11 +68,42 @@
                             </attribute>
                             <layout class="QVBoxLayout" name="matcherMainLayout">
                                 <item>
-                                    <widget class="QPushButton" name="findRecipesButton">
-                                        <property name="text">
-                                            <string>🔍 Find Recipes I Can Cook Now</string>
-                                        </property>
-                                    </widget>
+                                    <layout class="QHBoxLayout" name="matcherControlsLayout">
+                                        <item>
+                                            <widget class="QPushButton" name="findRecipesButton">
+                                                <property name="text">
+                                                    <string>🔍 Find Recipes</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <spacer name="horizontalSpacerMatcher">
+                                                <property name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                </property>
+                                                <property name="sizeHint" stdset="0">
+                                                    <size>
+                                                        <width>40</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="matcherSortLabel">
+                                                <property name="text">
+                                                    <string>Sort by:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QComboBox" name="matcherSortComboBox">
+                                                <property name="minimumWidth">
+                                                    <number>200</number>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
                                 </item>
                                 <item>
                                     <layout class="QHBoxLayout" name="matcherContentLayout">
@@ -85,7 +116,9 @@
                                                     <bool>true</bool>
                                                 </property>
                                                 <property name="placeholderText">
-                                                    <string>Click 'Find Recipes' and select a recipe to view details...</string>
+                                                    <string>Click 'Find Recipes' and select a recipe to view
+                                                        details...
+                                                    </string>
                                                 </property>
                                             </widget>
                                         </item>
@@ -101,7 +134,25 @@
                             </attribute>
                             <layout class="QHBoxLayout" name="recipesMainLayout">
                                 <item>
-                                    <widget class="QListWidget" name="recipesListWidget"/>
+                                    <layout class="QVBoxLayout" name="recipesLeftLayout">
+                                        <item>
+                                            <layout class="QHBoxLayout" name="recipesSortLayout">
+                                                <item>
+                                                    <widget class="QLabel" name="recipesSortLabel">
+                                                        <property name="text">
+                                                            <string>Sort by:</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item>
+                                                    <widget class="QComboBox" name="recipesSortComboBox"/>
+                                                </item>
+                                            </layout>
+                                        </item>
+                                        <item>
+                                            <widget class="QListWidget" name="recipesListWidget"/>
+                                        </item>
+                                    </layout>
                                 </item>
                                 <item>
                                     <widget class="QTextEdit" name="recipeDetailsTextEdit">

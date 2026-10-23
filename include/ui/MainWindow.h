@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTextEdit>
 #include "core/Inventory.h"
 #include "core/RecipeRepository.h"
 #include "core/ShoppingList.h"
@@ -51,13 +52,15 @@ private:
 
     void setupShoppingTable();
 
+    void setupSortComboBoxes();
+
     void updateInventoryTable();
 
     void updateRecipesList();
 
     void updateShoppingRecipeComboBox();
 
-    void displayRecipeDetails(const core::Recipe &recipe, class QTextEdit *targetTextEdit);
+    void displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit);
 };
 
 #endif // MAINWINDOW_H
