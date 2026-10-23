@@ -50,6 +50,13 @@
                                             </widget>
                                         </item>
                                         <item>
+                                            <widget class="QPushButton" name="removeExpiredButton">
+                                                <property name="text">
+                                                    <string>🗑️ Remove Expired</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
                                             <widget class="QPushButton" name="refreshButton">
                                                 <property name="text">
                                                     <string>🔄 Refresh Inventory</string>

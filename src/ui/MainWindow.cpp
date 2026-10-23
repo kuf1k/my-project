@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
+    connect(ui->removeExpiredButton, &QPushButton::clicked, this, &MainWindow::onRemoveExpiredClicked);
+    // <-- Підключення!
     connect(ui->recipesListWidget, &QListWidget::itemSelectionChanged, this, &MainWindow::onRecipeSelectionChanged);
 
     connect(ui->findRecipesButton, &QPushButton::clicked, this, &MainWindow::onFindCookableRecipesClicked);
@@ -253,7 +255,6 @@ void MainWindow::onCookRecipeClicked() {
 
     if (inventory.consumeRecipe(*targetRecipe)) {
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
-
         updateInventoryTable();
 
         ui->cookableRecipesListWidget->clear();
@@ -271,7 +272,7 @@ void MainWindow::onCookRecipeClicked() {
             }
         }
 
-        QMessageBox::information(this, "Bon Appétit!",
+        QMessageBox::information(this, "Bon Appétit! 🍽️",
                                  QString(
                                      "You successfully cooked '%1'! Required ingredients have been deducted from your pantry.")
                                  .arg(QString::fromStdString(title)));
@@ -279,6 +280,24 @@ void MainWindow::onCookRecipeClicked() {
         QMessageBox::critical(this, "Error",
                               "Not enough ingredients in your pantry to cook this recipe!");
     }
+}
+
+void MainWindow::onRemoveExpiredClicked() {
+    std::string currentDate = "2026-10-23";
+    size_t removedCount = inventory.removeExpired(currentDate);
+
+    if (removedCount == 0) {
+        QMessageBox::information(this, "Clean Pantry",
+                                 "No expired ingredients found in your pantry!");
+        return;
+    }
+
+    core::StorageManager::saveInventory(inventory, "inventory_save.json");
+    updateInventoryTable();
+
+    QMessageBox::information(this, "Expired Removed",
+                             QString("Successfully removed %1 expired ingredient(s) from your pantry.")
+                             .arg(removedCount));
 }
 
 void MainWindow::onGenerateShoppingListClicked() {
