@@ -35,11 +35,22 @@
                     <widget class="QTableWidget" name="inventoryTable"/>
                 </item>
                 <item>
-                    <widget class="QPushButton" name="refreshButton">
-                        <property name="text">
-                            <string>Refresh Data</string>
-                        </property>
-                    </widget>
+                    <layout class="QHBoxLayout" name="actionsLayout">
+                        <item>
+                            <widget class="QPushButton" name="addIngredientButton">
+                                <property name="text">
+                                    <string>➕ Add Ingredient</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QPushButton" name="refreshButton">
+                                <property name="text">
+                                    <string>🔄 Refresh Data</string>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
                 </item>
             </layout>
         </widget>

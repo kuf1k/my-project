@@ -52,9 +52,11 @@ add_executable(MainProject src/main.cpp
         src/core/ShoppingList.cpp
         src/core/StorageManager.cpp
         src/core/CountableIngredient.cpp
-        src/ui/MainWindow.cpp
         include/ui/MainWindow.h
-        src/ui/MainWindow.ui)
+        src/ui/MainWindow.cpp
+        src/ui/MainWindow.ui
+        include/ui/AddIngredientDialog.h
+        src/ui/AddIngredientDialog.cpp)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets)
