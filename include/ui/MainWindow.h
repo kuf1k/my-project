@@ -24,6 +24,8 @@ private slots:
 
     void onAddIngredientClicked();
 
+    void onRecipeSelectionChanged();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
@@ -34,6 +36,8 @@ private:
     void setupInventoryTable();
 
     void updateInventoryTable();
+
+    void updateRecipesList();
 };
 
 

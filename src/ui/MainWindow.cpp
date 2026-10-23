@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QColor>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -14,9 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
 
+    connect(ui->recipesListWidget, &QListWidget::itemSelectionChanged, this, &MainWindow::onRecipeSelectionChanged);
+
     setupInventoryTable();
     loadData();
     updateInventoryTable();
+    updateRecipesList();
 }
 
 MainWindow::~MainWindow() {
@@ -71,9 +75,69 @@ void MainWindow::updateInventoryTable() {
     }
 }
 
+void MainWindow::updateRecipesList() {
+    ui->recipesListWidget->clear();
+    const auto &recipes = recipeRepo.getRecipes();
+
+    for (const auto &recipe: recipes) {
+        ui->recipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+    }
+}
+
+void MainWindow::onRecipeSelectionChanged() {
+    QListWidgetItem *selectedItem = ui->recipesListWidget->currentItem();
+    if (!selectedItem) {
+        ui->recipeDetailsTextEdit->clear();
+        return;
+    }
+
+    std::string title = selectedItem->text().toStdString();
+
+    for (const auto &recipe: recipeRepo.getRecipes()) {
+        if (recipe.getTitle() == title) {
+            QString html = QString("<h2>%1</h2>").arg(QString::fromStdString(recipe.getTitle()));
+            html += QString("<p><b>⏱️ Prep Time:</b> %1 mins | <b>🔥 Calories:</b> %2 kcal</p>")
+                    .arg(recipe.getPrepTime())
+                    .arg(recipe.getCalories());
+
+            html += "<h3>🛒 Required Ingredients:</h3><ul>";
+            for (const auto &req: recipe.getRequirements()) {
+                html += QString("<li><b>%1</b>: %2 %3</li>")
+                        .arg(QString::fromStdString(req.name))
+                        .arg(req.requiredAmount)
+                        .arg(QString::fromStdString(req.unit));
+            }
+            html += "</ul>";
+
+            html += "<h3>📝 Instructions:</h3>";
+
+            QString rawInstructions = QString::fromStdString(recipe.getInstructions());
+
+            if (rawInstructions.contains(';')) {
+                QStringList steps = rawInstructions.split(';', Qt::SkipEmptyParts);
+                html += "<ol>";
+                for (QString step: steps) {
+                    step = step.trimmed();
+                    step.remove(QRegularExpression("^\\d+\\)\\s*"));
+                    if (!step.isEmpty()) {
+                        html += QString("<li>%1</li>").arg(step);
+                    }
+                }
+                html += "</ol>";
+            } else {
+                html += QString("<p>%1</p>").arg(rawInstructions);
+            }
+
+            ui->recipeDetailsTextEdit->setHtml(html);
+            break;
+        }
+    }
+}
+
 void MainWindow::onRefreshInventoryClicked() {
     loadData();
     updateInventoryTable();
+    updateRecipesList();
 }
 
 void MainWindow::onAddIngredientClicked() {

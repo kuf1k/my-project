@@ -88,14 +88,17 @@
                             <attribute name="title">
                                 <string>📖 Recipe Book</string>
                             </attribute>
-                            <layout class="QVBoxLayout" name="recipesLayout">
+                            <layout class="QHBoxLayout" name="recipesMainLayout">
                                 <item>
-                                    <widget class="QLabel" name="recipesPlaceholderLabel">
-                                        <property name="text">
-                                            <string>Recipe Book feature coming soon...</string>
+                                    <widget class="QListWidget" name="recipesListWidget"/>
+                                </item>
+                                <item>
+                                    <widget class="QTextEdit" name="recipeDetailsTextEdit">
+                                        <property name="readOnly">
+                                            <bool>true</bool>
                                         </property>
-                                        <property name="alignment">
-                                            <set>Qt::AlignCenter</set>
+                                        <property name="placeholderText">
+                                            <string>Select a recipe from the list to view details...</string>
                                         </property>
                                     </widget>
                                 </item>
