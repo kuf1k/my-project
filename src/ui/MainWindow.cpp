@@ -7,15 +7,11 @@
 #include <QColor>
 #include <QMessageBox>
 #include <QListWidgetItem>
-#include <QComboBox>
 #include <QRegularExpression>
-#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
-    setupSortComboBoxes();
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
@@ -25,59 +21,32 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cookableRecipesListWidget, &QListWidget::itemSelectionChanged, this,
             &MainWindow::onCookableRecipeSelectionChanged);
 
-    connect(ui->recipesSortComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            &MainWindow::onRecipesSortChanged);
-    connect(ui->matcherSortComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            &MainWindow::onMatcherSortChanged);
+    connect(ui->generateShoppingListButton, &QPushButton::clicked, this, &MainWindow::onGenerateShoppingListClicked);
 
     setupInventoryTable();
+    setupShoppingTable();
     loadData();
     updateInventoryTable();
     updateRecipesList();
+    updateShoppingRecipeComboBox();
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::setupSortComboBoxes() {
-    QStringList options = {
-        "By Name (A-Z)",
-        "By Prep Time (Fastest First)",
-        "By Calories (Low to High)",
-        "By Calories (High to Low)"
-    };
-    ui->recipesSortComboBox->clear();
-    ui->recipesSortComboBox->addItems(options);
-
-    ui->matcherSortComboBox->clear();
-    ui->matcherSortComboBox->addItems(options);
+void MainWindow::setupShoppingTable() {
+    ui->shoppingTableWidget->setColumnCount(3);
+    QStringList headers = {"Ingredient Name", "Amount Needed to Buy", "Unit"};
+    ui->shoppingTableWidget->setHorizontalHeaderLabels(headers);
+    ui->shoppingTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
-void MainWindow::sortRecipes(std::vector<core::Recipe> &recipes, int sortOption) {
-    switch (sortOption) {
-        case 0:
-            std::sort(recipes.begin(), recipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
-                return a.getTitle() < b.getTitle();
-            });
-            break;
-        case 1:
-            std::sort(recipes.begin(), recipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
-                return a.getPrepTime() < b.getPrepTime();
-            });
-            break;
-        case 2:
-            std::sort(recipes.begin(), recipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
-                return a.getCalories() < b.getCalories();
-            });
-            break;
-        case 3:
-            std::sort(recipes.begin(), recipes.end(), [](const core::Recipe &a, const core::Recipe &b) {
-                return a.getCalories() > b.getCalories();
-            });
-            break;
-        default:
-            break;
+void MainWindow::updateShoppingRecipeComboBox() {
+    ui->shoppingRecipeComboBox->clear();
+    const auto &recipes = recipeRepo.getRecipes();
+    for (const auto &recipe: recipes) {
+        ui->shoppingRecipeComboBox->addItem(QString::fromStdString(recipe.getTitle()));
     }
 }
 
@@ -131,10 +100,7 @@ void MainWindow::updateInventoryTable() {
 
 void MainWindow::updateRecipesList() {
     ui->recipesListWidget->clear();
-    auto recipes = recipeRepo.getRecipes();
-
-    int sortOption = ui->recipesSortComboBox->currentIndex();
-    sortRecipes(recipes, sortOption);
+    const auto &recipes = recipeRepo.getRecipes();
 
     for (const auto &recipe: recipes) {
         ui->recipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
@@ -207,9 +173,6 @@ void MainWindow::onFindCookableRecipesClicked() {
         return;
     }
 
-    int sortOption = ui->matcherSortComboBox->currentIndex();
-    sortRecipes(cookableRecipes, sortOption);
-
     for (const auto &recipe: cookableRecipes) {
         ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
     }
@@ -231,20 +194,49 @@ void MainWindow::onCookableRecipeSelectionChanged() {
     }
 }
 
-void MainWindow::onRecipesSortChanged(int index) {
-    Q_UNUSED(index);
-    updateRecipesList();
-}
+void MainWindow::onGenerateShoppingListClicked() {
+    QString selectedTitle = ui->shoppingRecipeComboBox->currentText();
+    if (selectedTitle.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please select a recipe first!");
+        return;
+    }
 
-void MainWindow::onMatcherSortChanged(int index) {
-    Q_UNUSED(index);
-    onFindCookableRecipesClicked();
+    std::string title = selectedTitle.toStdString();
+    bool found = false;
+
+    for (const auto &recipe: recipeRepo.getRecipes()) {
+        if (recipe.getTitle() == title) {
+            shoppingList.generateForRecipe(recipe, inventory);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) return;
+
+    ui->shoppingTableWidget->setRowCount(0);
+    const auto &items = shoppingList.getItems();
+
+    if (items.empty()) {
+        QMessageBox::information(this, "Shopping List",
+                                 "You already have all the necessary ingredients in your pantry for " + selectedTitle +
+                                 "!");
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+        ui->shoppingTableWidget->insertRow(i);
+        ui->shoppingTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i].name)));
+        ui->shoppingTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(items[i].amountToBuy)));
+        ui->shoppingTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].unit)));
+    }
 }
 
 void MainWindow::onRefreshInventoryClicked() {
     loadData();
     updateInventoryTable();
     updateRecipesList();
+    updateShoppingRecipeComboBox();
 }
 
 void MainWindow::onAddIngredientClicked() {

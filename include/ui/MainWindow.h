@@ -1,7 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
+
 #include <QMainWindow>
+#include "core/Inventory.h"
 #include "core/RecipeRepository.h"
+#include "core/ShoppingList.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -30,30 +33,27 @@ private slots:
 
     void onCookableRecipeSelectionChanged();
 
-    void onRecipesSortChanged(int index);
-
-    void onMatcherSortChanged(int index);
+    void onGenerateShoppingListClicked();
 
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
     core::RecipeRepository recipeRepo;
+    core::ShoppingList shoppingList;
 
     void loadData();
 
     void setupInventoryTable();
 
+    void setupShoppingTable();
+
     void updateInventoryTable();
 
     void updateRecipesList();
 
-    void setupSortComboBoxes();
-
-    void sortRecipes(std::vector<core::Recipe> &recipes, int sortOption);
+    void updateShoppingRecipeComboBox();
 
     void displayRecipeDetails(const core::Recipe &recipe, class QTextEdit *targetTextEdit);
-
 };
 
-
-#endif //MAINWINDOW_H
+#endif // MAINWINDOW_H
