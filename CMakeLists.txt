@@ -58,7 +58,8 @@ add_executable(MainProject src/main.cpp
         include/ui/AddIngredientDialog.h
         src/ui/AddIngredientDialog.cpp
         include/ui/AddRecipeDialog.h
-        src/ui/AddRecipeDialog.cpp)
+        src/ui/AddRecipeDialog.cpp
+        src/ui/AddRecipeDialog.ui)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets)
