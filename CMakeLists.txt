@@ -32,11 +32,17 @@ FetchContent_Declare(
         URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
 
+#Fetch spdlog library for fast logging
+FetchContent_Declare(
+        spdlog
+        URL https://github.com/gabime/spdlog/archive/refs/tags/v1.13.0.zip
+)
+
 # Ensure C++ runtime compatibility for MSVC on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Download and make external libraries available to the build system
-FetchContent_MakeAvailable(nlohmann_json googletest)
+FetchContent_MakeAvailable(nlohmann_json googletest spdlog)
 
 # Main executable configuration
 add_executable(MainProject src/main.cpp
@@ -62,7 +68,7 @@ add_executable(MainProject src/main.cpp
         src/ui/AddRecipeDialog.ui)
 
 # Link nlohmann_json to the main executable
-target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets)
+target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets spdlog::spdlog_header_only)
 
 # Unit tests executable configuration
 add_executable(UnitTests
@@ -90,7 +96,7 @@ add_executable(UnitTests
         src/core/CountableIngredient.cpp)
 
 # Link libraries to unit tests executable
-target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json)
+target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json spdlog::spdlog_header_only)
 
 # Automatic test discovery for IDE integration
 include(GoogleTest)
