@@ -3,6 +3,7 @@
 #include "core/LiquidIngredient.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <spdlog/spdlog.h>
 
 #include "core/CountableIngredient.h"
 
@@ -30,17 +31,21 @@ namespace core {
 
         std::ofstream file(filename);
         if (!file.is_open()) {
+            spdlog::error("Failed to open file for saving inventory: {}", filename);
             return false;
         }
 
         file << jArray.dump(4);
         file.close();
+
+        spdlog::info("Successfully saved {} inventory items to {}", inventory.getItemsCount(), filename);
         return true;
     }
 
     bool StorageManager::loadInventory(Inventory &inventory, const std::string &filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
+            spdlog::warn("Inventory save file not found or failed to open: {}", filename);
             return false;
         }
 
@@ -48,8 +53,9 @@ namespace core {
         json jArray;
         try {
             file >> jArray;
-        } catch (...) {
+        } catch (const std::exception &e) {
             file.close();
+            spdlog::error("JSON parse error while loading inventory from {}: {}", filename, e.what());
             return false;
         }
 
@@ -70,6 +76,7 @@ namespace core {
                 inventory.addIngredient(std::make_unique<CountableIngredient>(name, amount, expirationDate));
             }
         }
+        spdlog::info("Successfully loaded {} inventory items from {}", inventory.getItemsCount(), filename);
         return true;
     }
 
@@ -98,19 +105,21 @@ namespace core {
 
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
-            std::cerr << "Failed to open file for saving recipes: " << filename << "\n";
+            spdlog::error("Failed to open file for saving recipes: {}", filename);
             return false;
         }
 
         outFile << jArray.dump(4);
         outFile.close();
+
+        spdlog::info("Successfully saved {} recipes to {}", repo.getRecipesCount(), filename);
         return true;
     }
 
     bool StorageManager::loadRecipes(RecipeRepository &repo, const std::string &filename) {
         std::ifstream inFile(filename);
         if (!inFile.is_open()) {
-            std::cerr << "Failed to open file for loading recipes: " << filename << "\n";
+            spdlog::warn("Recipes save file not found or failed to open: {}", filename);
             return false;
         }
 
@@ -118,7 +127,8 @@ namespace core {
         try {
             inFile >> jArray;
         } catch (const json::parse_error &e) {
-            std::cerr << "JSON parse error: " << e.what() << "\n";
+            inFile.close();
+            spdlog::error("JSON parse error while loading recipes from {}: {}", filename, e.what());
             return false;
         }
 
@@ -148,6 +158,8 @@ namespace core {
         }
 
         inFile.close();
+
+        spdlog::info("Successfully loaded recipes from {}", filename);
         return true;
     }
 }

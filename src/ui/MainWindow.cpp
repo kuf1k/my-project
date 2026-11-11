@@ -13,6 +13,7 @@
 #include <QRegularExpression>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -206,6 +207,7 @@ void MainWindow::onFindCookableRecipesClicked() {
     auto cookableRecipes = recipeRepo.getCookableRecipes(inventory);
 
     if (cookableRecipes.empty()) {
+        spdlog::info("User checked cookable recipes: None available with current pantry items.");
         QMessageBox::information(this, "No Matching Recipes",
                                  "Sorry, you don't have enough ingredients in your pantry for any recipe right now!");
         return;
@@ -220,6 +222,7 @@ void MainWindow::onFindCookableRecipesClicked() {
     for (const auto &recipe: cookableRecipes) {
         ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
     }
+    spdlog::info("User found {} cookable recipe(s).", cookableRecipes.size());
 }
 
 void MainWindow::onCookableRecipeSelectionChanged() {
@@ -258,6 +261,7 @@ void MainWindow::onCookRecipeClicked() {
     if (!targetRecipe) return;
 
     if (inventory.consumeRecipe(*targetRecipe)) {
+        spdlog::info("User cooked recipe: '{}'. Pantry ingredients deducted.", title);
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
         updateInventoryTable();
 
@@ -281,6 +285,7 @@ void MainWindow::onCookRecipeClicked() {
                                      "You successfully cooked '%1'! Required ingredients have been deducted from your pantry.")
                                  .arg(QString::fromStdString(title)));
     } else {
+        spdlog::warn("User failed to cook recipe: '{}'. Insufficient ingredients.", title);
         QMessageBox::critical(this, "Error",
                               "Not enough ingredients in your pantry to cook this recipe!");
     }
@@ -292,6 +297,7 @@ void MainWindow::onAddRecipeClicked() {
         core::Recipe newRecipe = dialog.getCreatedRecipe();
 
         if (recipeRepo.hasRecipe(newRecipe.getTitle())) {
+            spdlog::warn("Attempted to add duplicate recipe: '{}'", newRecipe.getTitle());
             QMessageBox::warning(this, "Duplicate Recipe",
                                  QString("Recipe '%1' already exists!").arg(
                                      QString::fromStdString(newRecipe.getTitle())));
@@ -299,6 +305,8 @@ void MainWindow::onAddRecipeClicked() {
         }
 
         recipeRepo.addRecipe(newRecipe);
+        spdlog::info("User added new recipe: '{}' ({} mins, {} kcal)", newRecipe.getTitle(), newRecipe.getPrepTime(),
+                     newRecipe.getCalories());
         core::StorageManager::saveRecipes(recipeRepo, "recipes_save.json");
 
         updateRecipesList();
@@ -313,11 +321,13 @@ void MainWindow::onRemoveExpiredClicked() {
     size_t removedCount = inventory.removeExpired(currentDate);
 
     if (removedCount == 0) {
+        spdlog::info("User triggered expired items removal: Pantry is clean.");
         QMessageBox::information(this, "Clean Pantry",
                                  "No expired ingredients found in your pantry!");
         return;
     }
 
+    spdlog::warn("User removed {} expired ingredient(s) from pantry.", removedCount);
     core::StorageManager::saveInventory(inventory, "inventory_save.json");
     updateInventoryTable();
 
@@ -328,6 +338,7 @@ void MainWindow::onRemoveExpiredClicked() {
 
 void MainWindow::onExportInventoryClicked() {
     if (inventory.getItemsCount() == 0) {
+        spdlog::warn("Attempted to export empty inventory.");
         QMessageBox::warning(this, "Export Warning", "Your pantry is empty! Nothing to export.");
         return;
     }
@@ -348,9 +359,11 @@ void MainWindow::onExportInventoryClicked() {
     core::FileExporter exporter("Pantry Inventory Report", fileName.toStdString());
 
     if (exporter.exportData(inventory, currentDate)) {
+        spdlog::info("Exported inventory report to: {}", fileName.toStdString());
         QMessageBox::information(this, "Success",
                                  "Inventory report successfully exported to " + fileName);
     } else {
+        spdlog::error("Failed to export inventory report to: {}", fileName.toStdString());
         QMessageBox::critical(this, "Error", "Failed to export inventory report to file.");
     }
 }
@@ -379,11 +392,14 @@ void MainWindow::onGenerateShoppingListClicked() {
     const auto &items = shoppingList.getItems();
 
     if (items.empty()) {
+        spdlog::info("Generated shopping list for '{}': All ingredients already available.", title);
         QMessageBox::information(this, "Shopping List",
                                  "You already have all the necessary ingredients in your pantry for " + selectedTitle +
                                  "!");
         return;
     }
+
+    spdlog::info("User generated shopping list for '{}' ({} missing item(s)).", title, items.size());
 
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->shoppingTableWidget->insertRow(i);
@@ -395,6 +411,7 @@ void MainWindow::onGenerateShoppingListClicked() {
 
 void MainWindow::onExportShoppingListClicked() {
     if (shoppingList.isEmpty()) {
+        spdlog::warn("Attempted to export an empty shopping list.");
         QMessageBox::warning(this, "Export Warning",
                              "The shopping list is empty! Generate a shopping list first.");
         return;
@@ -413,9 +430,11 @@ void MainWindow::onExportShoppingListClicked() {
     }
 
     if (core::FileExporter::exportShoppingListToTxt(shoppingList, fileName.toStdString())) {
+        spdlog::info("Exported shopping list to: {}", fileName.toStdString());
         QMessageBox::information(this, "Success",
                                  "Shopping list successfully exported to " + fileName);
     } else {
+        spdlog::error("Failed to export shopping list to: {}", fileName.toStdString());
         QMessageBox::critical(this, "Error", "Failed to export shopping list to file.");
     }
 }
@@ -431,6 +450,7 @@ void MainWindow::onMatcherSortChanged(int index) {
 }
 
 void MainWindow::onRefreshInventoryClicked() {
+    spdlog::info("User refreshed inventory data from files.");
     loadData();
     updateInventoryTable();
     updateRecipesList();
@@ -442,6 +462,8 @@ void MainWindow::onAddIngredientClicked() {
     if (dialog.exec() == QDialog::Accepted) {
         auto newIngredient = dialog.getCreatedIngredient();
         if (newIngredient) {
+            spdlog::info("User added ingredient: '{}' ({:.1f} {})", newIngredient->getName(),
+                         newIngredient->getAmount(), newIngredient->getUnit());
             inventory.addIngredient(std::move(newIngredient));
             core::StorageManager::saveInventory(inventory, "inventory_save.json");
             updateInventoryTable();

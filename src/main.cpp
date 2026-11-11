@@ -1,4 +1,3 @@
-
 // CLI Menu
 
 /*#include <iostream>
@@ -333,8 +332,29 @@ int main() {
 
 #include <QApplication>
 #include "ui/MainWindow.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
+void initLogger() {
+    try {
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("nutrimesh.log", true);
+
+        auto logger = std::make_shared<spdlog::logger>("NutriMesh", spdlog::sinks_init_list{console_sink, file_sink});
+        spdlog::set_default_logger(logger);
+        spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
+        spdlog::set_level(spdlog::level::info);
+
+        spdlog::info("========================================");
+        spdlog::info(" NutriMesh Application Started");
+        spdlog::info("========================================");
+    } catch (const spdlog::spdlog_ex &ex) {
+    }
+}
 
 int main(int argc, char *argv[]) {
+    initLogger();
     QApplication app(argc, argv);
 
 
@@ -377,5 +397,7 @@ int main(int argc, char *argv[]) {
     MainWindow window;
     window.show();
 
-    return app.exec();
+    int result = app.exec();
+    spdlog::info("NutriMesh Application Exited normally.");
+    return result;
 }
