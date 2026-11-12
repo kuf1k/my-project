@@ -65,7 +65,8 @@ add_executable(MainProject src/main.cpp
         src/ui/AddIngredientDialog.cpp
         include/ui/AddRecipeDialog.h
         src/ui/AddRecipeDialog.cpp
-        src/ui/AddRecipeDialog.ui)
+        src/ui/AddRecipeDialog.ui
+        src/core/IngredientValidator.cpp)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets spdlog::spdlog_header_only)
@@ -93,7 +94,8 @@ add_executable(UnitTests
         tests/ShopingListTest.cpp
         src/core/StorageManager.cpp
         tests/StorageManagerTest.cpp
-        src/core/CountableIngredient.cpp)
+        src/core/CountableIngredient.cpp
+        src/core/IngredientValidator.cpp)
 
 # Link libraries to unit tests executable
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json spdlog::spdlog_header_only)
