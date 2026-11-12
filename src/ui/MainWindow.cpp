@@ -14,6 +14,7 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QDate>
+#include <QTime>
 #include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setupSortComboBoxes();
+    setupMealPlannerControls();
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
@@ -44,12 +46,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cookRecipeButton, &QPushButton::clicked, this, &MainWindow::onCookRecipeClicked);
     connect(ui->addRecipeButton, &QPushButton::clicked, this, &MainWindow::onAddRecipeClicked);
 
+    connect(ui->addMealPlanButton, &QPushButton::clicked, this, &MainWindow::onAddMealPlanClicked);
+    connect(ui->removeMealPlanButton, &QPushButton::clicked, this, &MainWindow::onRemoveMealPlanClicked);
+    connect(ui->clearMealPlanButton, &QPushButton::clicked, this, &MainWindow::onClearMealPlanClicked);
+    connect(ui->generateWeeklyShoppingButton, &QPushButton::clicked, this,
+            &MainWindow::onGenerateWeeklyShoppingClicked);
+
     setupInventoryTable();
     setupShoppingTable();
+    setupMealPlanTable();
     loadData();
     updateInventoryTable();
     updateRecipesList();
     updateShoppingRecipeComboBox();
+    updateMealPlanTable();
 }
 
 MainWindow::~MainWindow() {
@@ -70,6 +80,15 @@ void MainWindow::setupSortComboBoxes() {
     ui->matcherSortComboBox->addItems(options);
 }
 
+void MainWindow::setupMealPlannerControls() {
+    QStringList days = {
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+    };
+    ui->mealDayComboBox->clear();
+    ui->mealDayComboBox->addItems(days);
+    ui->mealTimeEdit->setTime(QTime(10, 0));
+}
+
 void MainWindow::setupShoppingTable() {
     ui->shoppingTableWidget->setColumnCount(3);
     QStringList headers = {"Ingredient Name", "Amount Needed to Buy", "Unit"};
@@ -77,17 +96,31 @@ void MainWindow::setupShoppingTable() {
     ui->shoppingTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
+void MainWindow::setupMealPlanTable() {
+    ui->mealPlanTableWidget->setColumnCount(5);
+    QStringList headers = {"Day", "Time", "Recipe", "Prep Time (mins)", "Calories (kcal)"};
+    ui->mealPlanTableWidget->setHorizontalHeaderLabels(headers);
+    ui->mealPlanTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->mealPlanTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->mealPlanTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->mealPlanTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
 void MainWindow::updateShoppingRecipeComboBox() {
     ui->shoppingRecipeComboBox->clear();
+    ui->mealRecipeComboBox->clear();
     const auto &recipes = recipeRepo.getRecipes();
     for (const auto &recipe: recipes) {
-        ui->shoppingRecipeComboBox->addItem(QString::fromStdString(recipe.getTitle()));
+        QString title = QString::fromStdString(recipe.getTitle());
+        ui->shoppingRecipeComboBox->addItem(title);
+        ui->mealRecipeComboBox->addItem(title);
     }
 }
 
 void MainWindow::loadData() {
     core::StorageManager::loadInventory(inventory, "inventory_save.json");
     core::StorageManager::loadRecipes(recipeRepo, "recipes_save.json");
+    core::StorageManager::loadMealPlan(mealPlanner, "meal_plan_save.json");
 }
 
 void MainWindow::setupInventoryTable() {
@@ -148,6 +181,37 @@ void MainWindow::updateRecipesList() {
     for (const auto &recipe: sortedRecipes) {
         ui->recipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
     }
+}
+
+void MainWindow::updateMealPlanTable() {
+    ui->mealPlanTableWidget->setRowCount(0);
+    const auto &entries = mealPlanner.getEntries();
+
+    for (int i = 0; i < static_cast<int>(entries.size()); ++i) {
+        ui->mealPlanTableWidget->insertRow(i);
+
+        QString prepStr = "-";
+        QString calStr = "-";
+
+        for (const auto &recipe: recipeRepo.getRecipes()) {
+            if (recipe.getTitle() == entries[i].recipeTitle) {
+                prepStr = QString::number(recipe.getPrepTime());
+                calStr = QString::number(recipe.getCalories());
+                break;
+            }
+        }
+
+        ui->mealPlanTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(entries[i].dayOfWeek)));
+        ui->mealPlanTableWidget->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(entries[i].time)));
+        ui->mealPlanTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(entries[i].recipeTitle)));
+        ui->mealPlanTableWidget->setItem(i, 3, new QTableWidgetItem(prepStr));
+        ui->mealPlanTableWidget->setItem(i, 4, new QTableWidgetItem(calStr));
+    }
+
+    double totalCal = mealPlanner.getTotalCalories(recipeRepo);
+    ui->mealTotalCaloriesLabel->setText(
+        QString("<b>Total Scheduled Calories:</b> %1 kcal").arg(totalCal)
+    );
 }
 
 void MainWindow::displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit) {
@@ -479,6 +543,92 @@ void MainWindow::onExportShoppingListClicked() {
     }
 }
 
+void MainWindow::onAddMealPlanClicked() {
+    QString day = ui->mealDayComboBox->currentText();
+    QString time = ui->mealTimeEdit->time().toString("HH:mm");
+    QString recipeTitle = ui->mealRecipeComboBox->currentText();
+
+    if (recipeTitle.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "No recipes available! Please add a recipe first.");
+        return;
+    }
+
+    mealPlanner.addMeal(day.toStdString(), time.toStdString(), recipeTitle.toStdString());
+    core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
+    updateMealPlanTable();
+
+    spdlog::info("Scheduled meal '{}' on {} at {}", recipeTitle.toStdString(), day.toStdString(), time.toStdString());
+}
+
+void MainWindow::onRemoveMealPlanClicked() {
+    int selectedRow = ui->mealPlanTableWidget->currentRow();
+    if (selectedRow < 0 || selectedRow >= static_cast<int>(mealPlanner.getEntriesCount())) {
+        QMessageBox::warning(this, "No Selection", "Please select a scheduled meal row first!");
+        return;
+    }
+
+    if (mealPlanner.removeMealAt(static_cast<size_t>(selectedRow))) {
+        core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
+        updateMealPlanTable();
+        spdlog::info("Removed scheduled meal at row {}", selectedRow);
+    }
+}
+
+void MainWindow::onClearMealPlanClicked() {
+    if (mealPlanner.getEntriesCount() == 0) {
+        return;
+    }
+
+    auto reply = QMessageBox::question(
+        this,
+        "Clear Schedule",
+        "Are you sure you want to clear the entire weekly meal schedule?",
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes) {
+        mealPlanner.clear();
+        core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
+        updateMealPlanTable();
+        spdlog::info("User cleared the weekly meal schedule.");
+    }
+}
+
+void MainWindow::onGenerateWeeklyShoppingClicked() {
+    auto plannedRecipes = mealPlanner.getPlannedRecipes(recipeRepo);
+    if (plannedRecipes.empty()) {
+        QMessageBox::warning(this, "Empty Schedule",
+                             "Your meal schedule is empty! Add some meals first.");
+        return;
+    }
+
+    shoppingList.generateForRecipes(plannedRecipes, inventory);
+
+    ui->shoppingTableWidget->setRowCount(0);
+    const auto &items = shoppingList.getItems();
+
+    ui->tabWidget->setCurrentWidget(ui->tabShopping);
+
+    if (items.empty()) {
+        QMessageBox::information(this, "All Set!",
+                                 "You already have all the ingredients needed for your entire weekly meal plan!");
+        return;
+    }
+
+    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
+        ui->shoppingTableWidget->insertRow(i);
+        ui->shoppingTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i].name)));
+        ui->shoppingTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(items[i].amountToBuy)));
+        ui->shoppingTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].unit)));
+    }
+
+    spdlog::info("Generated weekly shopping list from {} planned meals ({} missing item(s)).",
+                 plannedRecipes.size(), items.size());
+    QMessageBox::information(this, "Weekly Shopping List Ready",
+                             QString("Generated shopping list for %1 scheduled meal(s)!")
+                             .arg(plannedRecipes.size()));
+}
+
 void MainWindow::onRecipesSortChanged(int index) {
     Q_UNUSED(index);
     updateRecipesList();
@@ -495,6 +645,7 @@ void MainWindow::onRefreshInventoryClicked() {
     updateInventoryTable();
     updateRecipesList();
     updateShoppingRecipeComboBox();
+    updateMealPlanTable();
 }
 
 void MainWindow::onAddIngredientClicked() {

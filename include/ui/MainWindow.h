@@ -6,6 +6,7 @@
 #include "core/Inventory.h"
 #include "core/RecipeRepository.h"
 #include "core/ShoppingList.h"
+#include "core/MealPlanner.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -52,11 +53,20 @@ private slots:
 
     void onAddRecipeClicked();
 
+    void onAddMealPlanClicked();
+
+    void onRemoveMealPlanClicked();
+
+    void onClearMealPlanClicked();
+
+    void onGenerateWeeklyShoppingClicked();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
     core::RecipeRepository recipeRepo;
     core::ShoppingList shoppingList;
+    core::MealPlanner mealPlanner;
 
     void loadData();
 
@@ -64,13 +74,19 @@ private:
 
     void setupShoppingTable();
 
+    void setupMealPlanTable();
+
     void setupSortComboBoxes();
+
+    void setupMealPlannerControls();
 
     void updateInventoryTable();
 
     void updateRecipesList();
 
     void updateShoppingRecipeComboBox();
+
+    void updateMealPlanTable();
 
     void displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit);
 };
