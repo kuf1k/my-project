@@ -10,25 +10,15 @@ IngredientValidator::IngredientValidator() {
     };
 
     addEntry("Eggs", "Countable");
-    addEntry("Egg", "Countable");
     addEntry("Apples", "Countable");
-    addEntry("Apple", "Countable");
     addEntry("Bananas", "Countable");
-    addEntry("Banana", "Countable");
     addEntry("Tomatoes", "Countable");
-    addEntry("Tomato", "Countable");
     addEntry("Potatoes", "Countable");
-    addEntry("Potato", "Countable");
     addEntry("Onions", "Countable");
-    addEntry("Onion", "Countable");
     addEntry("Carrots", "Countable");
-    addEntry("Carrot", "Countable");
     addEntry("Lemons", "Countable");
-    addEntry("Lemon", "Countable");
     addEntry("Oranges", "Countable");
-    addEntry("Orange", "Countable");
     addEntry("Cucumbers", "Countable");
-    addEntry("Cucumber", "Countable");
     addEntry("Garlic", "Countable");
     addEntry("Bread", "Countable");
 
