@@ -162,4 +162,59 @@ namespace core {
         spdlog::info("Successfully loaded recipes from {}", filename);
         return true;
     }
+
+    bool StorageManager::saveMealPlan(const MealPlanner &planner, const std::string &filename) {
+        json jArray = json::array();
+
+        for (const auto &entry: planner.getEntries()) {
+            json entryJson;
+            entryJson["dayOfWeek"] = entry.dayOfWeek;
+            entryJson["time"] = entry.time;
+            entryJson["recipeTitle"] = entry.recipeTitle;
+            jArray.push_back(entryJson);
+        }
+
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            spdlog::error("Failed to open file for saving meal plan: {}", filename);
+            return false;
+        }
+
+        outFile << jArray.dump(4);
+        outFile.close();
+
+        spdlog::info("Successfully saved {} meal plan entries to {}", planner.getEntriesCount(), filename);
+        return true;
+    }
+
+    bool StorageManager::loadMealPlan(MealPlanner &planner, const std::string &filename) {
+        std::ifstream inFile(filename);
+        if (!inFile.is_open()) {
+            spdlog::warn("Meal plan save file not found or failed to open: {}", filename);
+            return false;
+        }
+
+        json jArray;
+        try {
+            inFile >> jArray;
+        } catch (const std::exception &e) {
+            inFile.close();
+            spdlog::error("JSON parse error while loading meal plan from {}: {}", filename, e.what());
+            return false;
+        }
+
+        inFile.close();
+        planner.clear();
+
+        for (const auto &entryJson: jArray) {
+            std::string dayOfWeek = entryJson.value("dayOfWeek", "");
+            std::string time = entryJson.value("time", "");
+            std::string recipeTitle = entryJson.value("recipeTitle", "");
+
+            planner.addMeal(dayOfWeek, time, recipeTitle);
+        }
+
+        spdlog::info("Successfully loaded {} meal plan entries from {}", planner.getEntriesCount(), filename);
+        return true;
+    }
 }

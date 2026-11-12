@@ -2,6 +2,7 @@
 #define STORAGEMANAGER_H
 #include "core/Inventory.h"
 #include "core/RecipeRepository.h"
+#include "core/MealPlanner.h"
 
 namespace core {
     class StorageManager {
@@ -14,6 +15,10 @@ namespace core {
         static bool saveRecipes(const RecipeRepository &repo, const std::string &filename);
 
         static bool loadRecipes(RecipeRepository &repo, const std::string &filename);
+
+        static bool saveMealPlan(const MealPlanner &planner, const std::string &filename);
+
+        static bool loadMealPlan(MealPlanner &planner, const std::string &filename);
     };
 }
 
