@@ -31,6 +31,20 @@ TEST(InventoryTest, RemoveExpiredDeletesOnlyExpiredItems) {
     EXPECT_EQ(inventory.getItemsCount(), 1);
 }
 
+TEST(InventoryTest, RemoveIngredientAtRemovesCorrectItem) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 500.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-10-15"));
+
+    EXPECT_FALSE(inventory.removeIngredientAt(5));
+    EXPECT_EQ(inventory.getItemsCount(), 2);
+
+    EXPECT_TRUE(inventory.removeIngredientAt(0));
+    EXPECT_EQ(inventory.getItemsCount(), 1);
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Flour"), 0.0);
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Milk"), 1000.0);
+}
+
 TEST(InventoryTest, FindByNameReturnsMatchingItems) {
     core::Inventory inventory;
     inventory.addIngredient(std::make_unique<core::SolidIngredient>("Wheat Flour", 500.0, "2026-12-31"));
