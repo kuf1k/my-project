@@ -13,6 +13,7 @@
 #include <QRegularExpression>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QDate>
 #include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -41,7 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->cookRecipeButton, &QPushButton::clicked, this, &MainWindow::onCookRecipeClicked);
     connect(ui->addRecipeButton, &QPushButton::clicked, this, &MainWindow::onAddRecipeClicked);
-    // <-- Підключено кнопку!
 
     setupInventoryTable();
     setupShoppingTable();
@@ -100,7 +100,7 @@ void MainWindow::updateInventoryTable() {
     ui->inventoryTable->setRowCount(0);
     const auto &items = inventory.getItems();
 
-    std::string currentDate = "2026-10-23";
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
 
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->inventoryTable->insertRow(i);
@@ -317,7 +317,7 @@ void MainWindow::onAddRecipeClicked() {
 }
 
 void MainWindow::onRemoveExpiredClicked() {
-    std::string currentDate = "2026-10-23";
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     size_t removedCount = inventory.removeExpired(currentDate);
 
     if (removedCount == 0) {
@@ -355,7 +355,7 @@ void MainWindow::onExportInventoryClicked() {
         return;
     }
 
-    std::string currentDate = "2026-10-23";
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     core::FileExporter exporter("Pantry Inventory Report", fileName.toStdString());
 
     if (exporter.exportData(inventory, currentDate)) {
