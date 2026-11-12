@@ -8,8 +8,17 @@ namespace core {
     void Inventory::addIngredient(std::unique_ptr<Ingredient> ingredient) {
         if (!ingredient) return;
 
+        auto toLower = [](const std::string &str) {
+            std::string res = str;
+            std::transform(res.begin(), res.end(), res.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return res;
+        };
+
+        std::string newNameLower = toLower(ingredient->getName());
+
         for (auto &item: items) {
-            if (item->getName() == ingredient->getName() &&
+            if (toLower(item->getName()) == ingredient->getName() &&
                 item->getExpirationDate() == ingredient->getExpirationDate() &&
                 item->getUnit() == ingredient->getUnit()) {
                 item->setAmount(item->getAmount() + ingredient->getAmount());
