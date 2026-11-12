@@ -23,6 +23,8 @@ namespace core {
 
         size_t removeExpired(const std::string &currentDate);
 
+        bool removeIngredientAt(size_t index);
+
         void findByName(const std::string &query, const std::string &currentDate) const;
 
         void printExpiringSoon(const std::string currentDate) const;

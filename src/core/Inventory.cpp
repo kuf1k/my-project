@@ -54,6 +54,14 @@ namespace core {
         return removedCount;
     }
 
+    bool Inventory::removeIngredientAt(size_t index) {
+        if (index >= items.size()) {
+            return false;
+        }
+        items.erase(items.begin() + static_cast<std::ptrdiff_t>(index));
+        return true;
+    }
+
     void Inventory::findByName(const std::string &query, const std::string &currentDate) const {
         std::cout << "\n=== Search Results for '" << query << "' ===\n";
         bool found = false;
