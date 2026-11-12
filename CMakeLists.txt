@@ -98,7 +98,8 @@ add_executable(UnitTests
         src/core/CountableIngredient.cpp
         src/core/IngredientValidator.cpp
         tests/IngredientValidatorTest.cpp
-        src/core/MealPlanner.cpp)
+        src/core/MealPlanner.cpp
+        tests/MealPlannerTest.cpp)
 
 # Link libraries to unit tests executable
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main nlohmann_json::nlohmann_json spdlog::spdlog_header_only)
