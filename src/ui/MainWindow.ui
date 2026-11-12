@@ -263,6 +263,112 @@
                             </layout>
                         </widget>
 
+                        <!-- Meal Planner -->
+                        <widget class="QWidget" name="tabMealPlanner">
+                            <attribute name="title">
+                                <string>📅 Meal Planner</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="mealPlannerMainLayout">
+                                <item>
+                                    <layout class="QHBoxLayout" name="mealPlannerControlsLayout">
+                                        <item>
+                                            <widget class="QLabel" name="mealDayLabel">
+                                                <property name="text">
+                                                    <string>Day:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QComboBox" name="mealDayComboBox"/>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="mealTimeLabel">
+                                                <property name="text">
+                                                    <string>Time:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QTimeEdit" name="mealTimeEdit">
+                                                <property name="displayFormat">
+                                                    <string>HH:mm</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="mealRecipeLabel">
+                                                <property name="text">
+                                                    <string>Recipe:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QComboBox" name="mealRecipeComboBox">
+                                                <property name="minimumWidth">
+                                                    <number>200</number>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="addMealPlanButton">
+                                                <property name="text">
+                                                    <string>➕ Add to Schedule</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                                <item>
+                                    <widget class="QTableWidget" name="mealPlanTableWidget"/>
+                                </item>
+                                <item>
+                                    <layout class="QHBoxLayout" name="mealPlannerBottomLayout">
+                                        <item>
+                                            <widget class="QLabel" name="mealTotalCaloriesLabel">
+                                                <property name="text">
+                                                    <string>&lt;b&gt;Total Scheduled Calories:&lt;/b&gt; 0 kcal</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <spacer name="mealPlannerSpacer">
+                                                <property name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                </property>
+                                                <property name="sizeHint" stdset="0">
+                                                    <size>
+                                                        <width>40</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="removeMealPlanButton">
+                                                <property name="text">
+                                                    <string>❌ Remove Selected</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="clearMealPlanButton">
+                                                <property name="text">
+                                                    <string>🧹 Clear Schedule</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="generateWeeklyShoppingButton">
+                                                <property name="text">
+                                                    <string>🛒 Generate Weekly Shopping List</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                            </layout>
+                        </widget>
+
                     </widget>
                 </item>
             </layout>
