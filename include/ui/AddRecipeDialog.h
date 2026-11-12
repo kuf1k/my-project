@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "core/Recipe.h"
+#include "core/IngredientValidator.h"
 
 namespace Ui {
     class AddRecipeDialog;
@@ -20,6 +21,8 @@ public:
     core::Recipe getCreatedRecipe() const;
 
 private slots:
+    void onReqNameChanged(const QString &text);
+
     void onAddRequirementClicked();
 
     void onRemoveRequirementClicked();
@@ -29,5 +32,6 @@ private slots:
 private:
     Ui::AddRecipeDialog *ui;
     core::Recipe createdRecipe;
+    core::IngredientValidator validator;
 };
 #endif //ADDRECIPEDIALOG_H
