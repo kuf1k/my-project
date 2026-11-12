@@ -8,7 +8,7 @@
 
 namespace core {
     struct ValidationResult {
-        bool isKnown = true;
+        bool isKnown = false;
         std::string expectedType;
         std::string expectedUnit;
         std::optional<std::string> typoSuggestion;
