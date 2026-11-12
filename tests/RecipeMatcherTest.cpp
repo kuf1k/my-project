@@ -26,3 +26,13 @@ TEST(RecipeMatcherTest, CanPrepareReturnsFalseWhenMissingIngredients) {
 
     EXPECT_FALSE(core::RecipeMatcher::canPrepare(pancake, inventory));
 }
+
+TEST(RecipeMatcherTest, CanPrepareReturnsFalseWhenUnitMismatches) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Eggs", 500.0, "2026-12-31"));
+
+    core::Recipe omelette("Omelette");
+    omelette.addRequirement("Eggs", 3.0, "pcs");
+
+    EXPECT_FALSE(core::RecipeMatcher::canPrepare(omelette, inventory));
+}

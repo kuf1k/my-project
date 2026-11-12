@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 
+
 namespace core {
     void Inventory::addIngredient(std::unique_ptr<Ingredient> ingredient) {
         if (!ingredient) return;
@@ -160,9 +161,10 @@ namespace core {
 
         for (const auto &req: recipe.getRequirements()) {
             double amountNeeded = req.requiredAmount;
+            std::string reqNameLower = toLower(req.name);
 
             for (auto it = items.begin(); it != items.end() && amountNeeded > 0;) {
-                if (toLower((*it)->getName()) == req.name) {
+                if (toLower((*it)->getName()) == reqNameLower && (*it)->getUnit() == req.unit) {
                     double available = (*it)->getAmount();
 
                     if (available <= amountNeeded) {

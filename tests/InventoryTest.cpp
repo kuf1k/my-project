@@ -102,3 +102,24 @@ TEST(InventoryTest, ConsumeRecipeFailsWhenNotEnough) {
 
     EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Flour"), 100.0);
 }
+
+TEST(InventoryTest, AddIngredientMergesDuplicatesCaseInsensitively) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 300.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("flour", 200.0, "2026-12-31"));
+    inventory.addIngredient(std::make_unique<core::SolidIngredient>("Flour", 100.0, "2027-01-15"));
+
+    EXPECT_EQ(inventory.getItemsCount(), 2);
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Flour", "g"), 600.0);
+}
+
+TEST(InventoryTest, ConsumeRecipeRespectsUnitAndCase) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Eggs", 500.0, "2026-12-31"));
+
+    core::Recipe omelette("Omelette");
+    omelette.addRequirement("eggs", 3.0, "pcs");
+
+    EXPECT_FALSE(inventory.consumeRecipe(omelette));
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Eggs", "ml"), 500.0);
+}

@@ -37,3 +37,8 @@ TEST(IngredientTest, InizialiazationAndUnit) {
     EXPECT_EQ(eggs.getExpirationDate(), "2026-11-15");
     EXPECT_EQ(eggs.getUnit(), "pcs");
 }
+
+TEST(IngredientTest, CapitalizesFirstLetterOfName) {
+    core::SolidIngredient flour("flour", 250.0, "2026-12-31");
+    EXPECT_EQ(flour.getName(), "Flour");
+}

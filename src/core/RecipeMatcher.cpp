@@ -4,7 +4,7 @@
 namespace core {
     bool RecipeMatcher::canPrepare(const Recipe &recipe, const Inventory &inventory) {
         for (const auto &req: recipe.getRequirements()) {
-            double available = inventory.getIngredientAmount(req.name,req.name);
+            double available = inventory.getIngredientAmount(req.name,req.unit);
             if (available < req.requiredAmount) {
                 return false;
             }
