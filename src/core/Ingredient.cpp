@@ -3,6 +3,9 @@
 namespace core {
     Ingredient::Ingredient(const std::string &name, double amount, const std::string &expirationDate)
         : name(name), amount(amount), expirationDate(expirationDate) {
+        if (!this->name.empty()) {
+            this->name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(this->name[0])));
+        }
     }
 
     std::string Ingredient::getName() const {

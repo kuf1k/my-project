@@ -18,7 +18,7 @@ namespace core {
         std::string newNameLower = toLower(ingredient->getName());
 
         for (auto &item: items) {
-            if (toLower(item->getName()) == ingredient->getName() &&
+            if (toLower(item->getName()) == newNameLower &&
                 item->getExpirationDate() == ingredient->getExpirationDate() &&
                 item->getUnit() == ingredient->getUnit()) {
                 item->setAmount(item->getAmount() + ingredient->getAmount());
@@ -128,16 +128,41 @@ namespace core {
         return total;
     }
 
+    double Inventory::getIngredientAmount(const std::string &name, const std::string &unit) const {
+        auto toLower = [](const std::string &str) {
+            std::string res = str;
+            std::transform(res.begin(), res.end(), res.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return res;
+        };
+
+        std::string targetName = toLower(name);
+        double total = 0.0;
+        for (const auto &item: items) {
+            if (toLower(item->getName()) == targetName && item->getUnit() == unit) {
+                total += item->getAmount();
+            }
+        }
+        return total;
+    }
+
     bool Inventory::consumeRecipe(const Recipe &recipe) {
         if (!RecipeMatcher::canPrepare(recipe, *this)) {
             return false;
         }
 
+        auto toLower = [](const std::string &str) {
+            std::string res = str;
+            std::transform(res.begin(), res.end(), res.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            return res;
+        };
+
         for (const auto &req: recipe.getRequirements()) {
             double amountNeeded = req.requiredAmount;
 
             for (auto it = items.begin(); it != items.end() && amountNeeded > 0;) {
-                if ((*it)->getName() == req.name) {
+                if (toLower((*it)->getName()) == req.name) {
                     double available = (*it)->getAmount();
 
                     if (available <= amountNeeded) {

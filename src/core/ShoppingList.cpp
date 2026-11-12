@@ -23,7 +23,7 @@ namespace core {
             }
         }
         for (const auto &[name, req]: totalRequirements) {
-            double available = inventory.getIngredientAmount(name);
+            double available = inventory.getIngredientAmount(name,req.unit);
 
             if (available < req.amount) {
                 double shortage = req.amount - available;

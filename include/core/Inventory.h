@@ -31,6 +31,8 @@ namespace core {
 
         double getIngredientAmount(const std::string &name) const;
 
+        double getIngredientAmount(const std::string &name, const std::string &unit) const;
+
         bool consumeRecipe(const Recipe &recipe);
 
         void clear();
