@@ -392,6 +392,20 @@ int main(int argc, char *argv[]) {
         "}"
         "#removeExpiredButton:hover { background-color: #843838; }"
         "#removeExpiredButton:pressed { background-color: #522323; }"
+
+        "#deleteIngredientButton {"
+        "    background-color: #562b2b;"
+        "    border-color: #703838;"
+        "}"
+        "#deleteIngredientButton:hover { background-color: #703838; }"
+        "#deleteIngredientButton:pressed { background-color: #422121; }"
+
+        "#removeExpiredButton {"
+        "    background-color: #6b2e2e;"
+        "    border-color: #843838;"
+        "}"
+        "#removeExpiredButton:hover { background-color: #843838; }"
+        "#removeExpiredButton:pressed { background-color: #522323; }"
     );
 
     MainWindow window;

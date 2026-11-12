@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
+    connect(ui->deleteIngredientButton, &QPushButton::clicked, this, &MainWindow::onDeleteIngredientClicked);
     connect(ui->removeExpiredButton, &QPushButton::clicked, this, &MainWindow::onRemoveExpiredClicked);
     connect(ui->exportInventoryButton, &QPushButton::clicked, this, &MainWindow::onExportInventoryClicked);
     connect(ui->recipesListWidget, &QListWidget::itemSelectionChanged, this, &MainWindow::onRecipeSelectionChanged);
@@ -94,6 +95,9 @@ void MainWindow::setupInventoryTable() {
     QStringList headers = {"Name", "Amount", "Unit", "Expiration Date"};
     ui->inventoryTable->setHorizontalHeaderLabels(headers);
     ui->inventoryTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->inventoryTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->inventoryTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->inventoryTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void MainWindow::updateInventoryTable() {
@@ -313,6 +317,42 @@ void MainWindow::onAddRecipeClicked() {
         updateShoppingRecipeComboBox();
 
         QMessageBox::information(this, "Success", "Custom recipe added successfully!");
+    }
+}
+
+void MainWindow::onDeleteIngredientClicked() {
+    int selectedRow = ui->inventoryTable->currentRow();
+    const auto &items = inventory.getItems();
+
+    if (selectedRow < 0 || selectedRow >= static_cast<int>(items.size())) {
+        QMessageBox::warning(this, "No Selection",
+                             "Please select an ingredient row in the table first!");
+        return;
+    }
+
+    QString itemName = QString::fromStdString(items[selectedRow]->getName());
+    double itemAmount = items[selectedRow]->getAmount();
+    QString itemUnit = QString::fromStdString(items[selectedRow]->getUnit());
+
+    auto reply = QMessageBox::question(
+        this,
+        "Confirm Deletion",
+        QString("Are you sure you want to delete '%1' (%2 %3)?")
+            .arg(itemName)
+            .arg(itemAmount)
+            .arg(itemUnit),
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    if (inventory.removeIngredientAt(static_cast<size_t>(selectedRow))) {
+        spdlog::info("User deleted ingredient: '{}' ({:.1f} {})",
+                     itemName.toStdString(), itemAmount, itemUnit.toStdString());
+        core::StorageManager::saveInventory(inventory, "inventory_save.json");
+        updateInventoryTable();
     }
 }
 

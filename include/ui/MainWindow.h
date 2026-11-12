@@ -28,6 +28,8 @@ private slots:
 
     void onAddIngredientClicked();
 
+    void onDeleteIngredientClicked();
+
     void onRemoveExpiredClicked();
 
     void onExportInventoryClicked();
