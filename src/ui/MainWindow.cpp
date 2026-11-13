@@ -5,6 +5,7 @@
 #include "core/StorageManager.h"
 #include "core/DateUtils.h"
 #include "core/FileExporter.h"
+#include "core/DataFilter.h"
 #include <QHeaderView>
 #include <QColor>
 #include <QMessageBox>
@@ -23,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupSortComboBoxes();
     setupMealPlannerControls();
+    setupSmartFilterControls();
 
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshInventoryClicked);
     connect(ui->addIngredientButton, &QPushButton::clicked, this, &MainWindow::onAddIngredientClicked);
@@ -52,6 +54,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->generateWeeklyShoppingButton, &QPushButton::clicked, this,
             &MainWindow::onGenerateWeeklyShoppingClicked);
 
+    connect(ui->applySmartFilterButton, &QPushButton::clicked, this, &MainWindow::onApplySmartFilterClicked);
+    connect(ui->resetSmartFilterButton, &QPushButton::clicked, this, &MainWindow::onResetSmartFilterClicked);
+    connect(ui->filteredRecipesListWidget, &QListWidget::itemSelectionChanged, this,
+            &MainWindow::onFilteredRecipeSelectionChanged);
+    connect(ui->quickAddToMealPlanButton, &QPushButton::clicked, this, &MainWindow::onQuickAddToMealPlanClicked);
+
     setupInventoryTable();
     setupShoppingTable();
     setupMealPlanTable();
@@ -60,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateRecipesList();
     updateShoppingRecipeComboBox();
     updateMealPlanTable();
+    onApplySmartFilterClicked();
 }
 
 MainWindow::~MainWindow() {
@@ -87,6 +96,15 @@ void MainWindow::setupMealPlannerControls() {
     ui->mealDayComboBox->clear();
     ui->mealDayComboBox->addItems(days);
     ui->mealTimeEdit->setTime(QTime(10, 0));
+}
+
+void MainWindow::setupSmartFilterControls() {
+    QStringList days = {
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+    };
+    ui->quickScheduleDayComboBox->clear();
+    ui->quickScheduleDayComboBox->addItems(days);
+    ui->quickScheduleTimeEdit->setTime(QTime(12, 0));
 }
 
 void MainWindow::setupShoppingTable() {
@@ -629,6 +647,92 @@ void MainWindow::onGenerateWeeklyShoppingClicked() {
                              .arg(plannedRecipes.size()));
 }
 
+void MainWindow::onApplySmartFilterClicked() {
+    int maxCalories = ui->filterMaxCaloriesSpinBox->value();
+    int maxTime = ui->filterMaxTimeSpinBox->value();
+    QString ingredientQuery = ui->filterIngredientLineEdit->text().trimmed().toLower();
+
+    auto filtered = core::DataFilter<core::Recipe>::filterBy(
+        recipeRepo.getRecipes(),
+        [maxCalories, maxTime, &ingredientQuery](const core::Recipe &recipe) {
+            if (maxCalories > 0 && recipe.getCalories() > static_cast<double>(maxCalories)) {
+                return false;
+            }
+            if (maxTime > 0 && recipe.getPrepTime() > static_cast<size_t>(maxTime)) {
+                return false;
+            }
+            if (!ingredientQuery.isEmpty()) {
+                bool hasIngredient = core::DataFilter<core::RecipeRequirement>::contains(
+                    recipe.getRequirements(),
+                    [&ingredientQuery](const core::RecipeRequirement &req) {
+                        return QString::fromStdString(req.name).toLower().contains(ingredientQuery);
+                    }
+                );
+                if (!hasIngredient) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    );
+
+    ui->filteredRecipesListWidget->clear();
+    ui->filteredRecipeDetailsTextEdit->clear();
+
+    for (const auto &recipe: filtered) {
+        ui->filteredRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+    }
+
+    spdlog::info("Smart filter applied (maxCal={}, maxTime={}, ingredient='{}'): {} recipe(s) matched.",
+                 maxCalories, maxTime, ingredientQuery.toStdString(), filtered.size());
+}
+
+void MainWindow::onResetSmartFilterClicked() {
+    ui->filterMaxCaloriesSpinBox->setValue(0);
+    ui->filterMaxTimeSpinBox->setValue(0);
+    ui->filterIngredientLineEdit->clear();
+    onApplySmartFilterClicked();
+}
+
+void MainWindow::onFilteredRecipeSelectionChanged() {
+    QListWidgetItem *selectedItem = ui->filteredRecipesListWidget->currentItem();
+    if (!selectedItem) {
+        ui->filteredRecipeDetailsTextEdit->clear();
+        return;
+    }
+
+    std::string title = selectedItem->text().toStdString();
+    for (const auto &recipe: recipeRepo.getRecipes()) {
+        if (recipe.getTitle() == title) {
+            displayRecipeDetails(recipe, ui->filteredRecipeDetailsTextEdit);
+            break;
+        }
+    }
+}
+
+void MainWindow::onQuickAddToMealPlanClicked() {
+    QListWidgetItem *selectedItem = ui->filteredRecipesListWidget->currentItem();
+    if (!selectedItem) {
+        QMessageBox::warning(this, "No Selection", "Please select a recipe from the filtered list first!");
+        return;
+    }
+
+    QString day = ui->quickScheduleDayComboBox->currentText();
+    QString time = ui->quickScheduleTimeEdit->time().toString("HH:mm");
+    QString recipeTitle = selectedItem->text();
+
+    mealPlanner.addMeal(day.toStdString(), time.toStdString(), recipeTitle.toStdString());
+    core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
+    updateMealPlanTable();
+
+    spdlog::info("Quick-scheduled filtered recipe '{}' on {} at {}",
+                 recipeTitle.toStdString(), day.toStdString(), time.toStdString());
+
+    QMessageBox::information(this, "Added to Schedule",
+                             QString("'%1' scheduled for %2 at %3!")
+                             .arg(recipeTitle, day, time));
+}
+
 void MainWindow::onRecipesSortChanged(int index) {
     Q_UNUSED(index);
     updateRecipesList();
@@ -646,6 +750,7 @@ void MainWindow::onRefreshInventoryClicked() {
     updateRecipesList();
     updateShoppingRecipeComboBox();
     updateMealPlanTable();
+    onApplySmartFilterClicked();
 }
 
 void MainWindow::onAddIngredientClicked() {

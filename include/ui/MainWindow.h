@@ -61,6 +61,14 @@ private slots:
 
     void onGenerateWeeklyShoppingClicked();
 
+    void onApplySmartFilterClicked();
+
+    void onResetSmartFilterClicked();
+
+    void onFilteredRecipeSelectionChanged();
+
+    void onQuickAddToMealPlanClicked();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
@@ -79,6 +87,8 @@ private:
     void setupSortComboBoxes();
 
     void setupMealPlannerControls();
+
+    void setupSmartFilterControls();
 
     void updateInventoryTable();
 
