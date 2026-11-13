@@ -14,6 +14,7 @@
 #include <QListWidgetItem>
 #include <QComboBox>
 #include <QHBoxLayout>
+#include <QSignalBlocker>
 #include <QRegularExpression>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -21,7 +22,6 @@
 #include <QTime>
 #include <QMap>
 #include <QSet>
-#include <QSignalBlocker>
 #include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -115,7 +115,6 @@ void MainWindow::retranslateUi() {
     auto &tm = TranslationManager::instance();
     bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
 
-
     setWindowTitle(isUk ? "NutriMesh - Розумний кухонний помічник" : "NutriMesh - Smart Kitchen Assistant");
     ui->headerTitleLabel->setText(
         QString("<h2 style='margin:0; padding:2px 0;'>%1</h2>").arg(tm.tr("app_title"))
@@ -127,7 +126,6 @@ void MainWindow::retranslateUi() {
     ui->tabWidget->setTabText(4, tm.tr("tab_meal"));
     ui->tabWidget->setTabText(5, tm.tr("tab_filter"));
     ui->tabWidget->setTabText(6, tm.tr("tab_stats"));
-
 
     ui->addIngredientButton->setText(tm.tr("btn_add_ingredient"));
     ui->deleteIngredientButton->setText(tm.tr("btn_delete_ingredient"));
@@ -141,7 +139,6 @@ void MainWindow::retranslateUi() {
         tm.tr("inv_header_unit"),
         tm.tr("inv_header_exp")
     });
-
 
     ui->findRecipesButton->setText(tm.tr("btn_find_recipes"));
     ui->matcherSortLabel->setText(tm.tr("lbl_sort_by"));
@@ -159,7 +156,6 @@ void MainWindow::retranslateUi() {
             ? "Оберіть рецепт зі списку ліворуч для перегляду деталей..."
             : "Select a recipe from the list to view details..."
     );
-
 
     int recSortIdx = ui->recipesSortComboBox->currentIndex();
     int matchSortIdx = ui->matcherSortComboBox->currentIndex();
@@ -180,7 +176,6 @@ void MainWindow::retranslateUi() {
             : QStringList{"Ingredient Name", "Amount Needed to Buy", "Unit"}
     );
 
-
     ui->mealDayLabel->setText(tm.tr("lbl_day"));
     ui->mealTimeLabel->setText(tm.tr("lbl_time"));
     ui->mealRecipeLabel->setText(tm.tr("lbl_recipe"));
@@ -194,14 +189,12 @@ void MainWindow::retranslateUi() {
             : QStringList{"Day", "Time", "Recipe", "Prep Time (mins)", "Calories (kcal)"}
     );
 
-
     int mealDayIdx = ui->mealDayComboBox->currentIndex();
     int quickDayIdx = ui->quickScheduleDayComboBox->currentIndex();
     setupMealPlannerControls();
     setupSmartFilterControls();
     if (mealDayIdx >= 0) ui->mealDayComboBox->setCurrentIndex(mealDayIdx);
     if (quickDayIdx >= 0) ui->quickScheduleDayComboBox->setCurrentIndex(quickDayIdx);
-
 
     ui->filterMaxCalLabel->setText(tm.tr("lbl_max_calories"));
     ui->filterMaxTimeLabel->setText(tm.tr("lbl_max_time"));
@@ -218,13 +211,45 @@ void MainWindow::retranslateUi() {
             : "Set filter criteria above and select a recipe to view details..."
     );
 
-
     ui->refreshStatisticsButton->setText(tm.tr("btn_refresh_stats"));
 
+    int recRow = ui->recipesListWidget->currentRow();
+    int shopIdx = ui->shoppingRecipeComboBox->currentIndex();
+    int mealRecIdx = ui->mealRecipeComboBox->currentIndex();
 
     updateInventoryTable();
+    updateRecipesList();
+    updateShoppingRecipeComboBox();
     updateMealPlanTable();
+    onApplySmartFilterClicked();
     updateStatisticsTab();
+
+    if (recRow >= 0 && recRow < ui->recipesListWidget->count()) {
+        ui->recipesListWidget->setCurrentRow(recRow);
+    }
+    if (shopIdx >= 0) {
+        ui->shoppingRecipeComboBox->setCurrentIndex(shopIdx);
+    }
+    if (mealRecIdx >= 0) {
+        ui->mealRecipeComboBox->setCurrentIndex(mealRecIdx);
+    }
+
+    for (int i = 0; i < ui->cookableRecipesListWidget->count(); ++i) {
+        auto *item = ui->cookableRecipesListWidget->item(i);
+        QString rawTitle = item->data(Qt::UserRole).toString();
+        item->setText(tm.translateRecipeTitle(rawTitle));
+    }
+
+    const auto &shopItems = shoppingList.getItems();
+    for (int i = 0; i < static_cast<int>(shopItems.size()) && i < ui->shoppingTableWidget->rowCount(); ++i) {
+        ui->shoppingTableWidget->item(i, 0)->setText(
+            tm.translateIngredient(QString::fromStdString(shopItems[i].name))
+        );
+        ui->shoppingTableWidget->item(i, 2)->setText(
+            tm.translateUnit(QString::fromStdString(shopItems[i].unit))
+        );
+    }
+
     onRecipeSelectionChanged();
     onCookableRecipeSelectionChanged();
     onFilteredRecipeSelectionChanged();
@@ -258,21 +283,20 @@ QString MainWindow::formatDayWithDate(const QString &dayName) const {
 }
 
 void MainWindow::setupSortComboBoxes() {
-
     bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
     QStringList options = isUk
-        ? QStringList{
-            "За назвою (A-Z)",
-            "За часом готування (найшвидші)",
-            "За калоріями (від менших)",
-            "За калоріями (від більших)"
-        }
-        : QStringList{
-            "By Name (A-Z)",
-            "By Prep Time (Fastest First)",
-            "By Calories (Low to High)",
-            "By Calories (High to Low)"
-        };
+                              ? QStringList{
+                                  "За назвою (A-Z)",
+                                  "За часом готування (найшвидші)",
+                                  "За калоріями (від менших)",
+                                  "За калоріями (від більших)"
+                              }
+                              : QStringList{
+                                  "By Name (A-Z)",
+                                  "By Prep Time (Fastest First)",
+                                  "By Calories (Low to High)",
+                                  "By Calories (High to Low)"
+                              };
 
     ui->recipesSortComboBox->clear();
     ui->recipesSortComboBox->addItems(options);
@@ -286,7 +310,7 @@ void MainWindow::setupMealPlannerControls() {
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
     };
     ui->mealDayComboBox->clear();
-    for (const QString &day : days) {
+    for (const QString &day: days) {
         ui->mealDayComboBox->addItem(formatDayWithDate(day), day);
     }
     ui->mealTimeEdit->setTime(QTime(10, 0));
@@ -297,7 +321,7 @@ void MainWindow::setupSmartFilterControls() {
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
     };
     ui->quickScheduleDayComboBox->clear();
-    for (const QString &day : days) {
+    for (const QString &day: days) {
         ui->quickScheduleDayComboBox->addItem(formatDayWithDate(day), day);
     }
     ui->quickScheduleTimeEdit->setTime(QTime(12, 0));
@@ -323,11 +347,13 @@ void MainWindow::setupMealPlanTable() {
 void MainWindow::updateShoppingRecipeComboBox() {
     ui->shoppingRecipeComboBox->clear();
     ui->mealRecipeComboBox->clear();
+    auto &tm = TranslationManager::instance();
     const auto &recipes = recipeRepo.getRecipes();
     for (const auto &recipe: recipes) {
-        QString title = QString::fromStdString(recipe.getTitle());
-        ui->shoppingRecipeComboBox->addItem(title);
-        ui->mealRecipeComboBox->addItem(title);
+        QString rawTitle = QString::fromStdString(recipe.getTitle());
+        QString displayTitle = tm.translateRecipeTitle(rawTitle);
+        ui->shoppingRecipeComboBox->addItem(displayTitle, rawTitle);
+        ui->mealRecipeComboBox->addItem(displayTitle, rawTitle);
     }
 }
 
@@ -350,15 +376,19 @@ void MainWindow::setupInventoryTable() {
 void MainWindow::updateInventoryTable() {
     ui->inventoryTable->setRowCount(0);
     const auto &items = inventory.getItems();
+    auto &tm = TranslationManager::instance();
 
     std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
 
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->inventoryTable->insertRow(i);
 
-        auto *nameItem = new QTableWidgetItem(QString::fromStdString(items[i]->getName()));
+        QString displayName = tm.translateIngredient(QString::fromStdString(items[i]->getName()));
+        QString displayUnit = tm.translateUnit(QString::fromStdString(items[i]->getUnit()));
+
+        auto *nameItem = new QTableWidgetItem(displayName);
         auto *amountItem = new QTableWidgetItem(QString::number(items[i]->getAmount()));
-        auto *unitItem = new QTableWidgetItem(QString::fromStdString(items[i]->getUnit()));
+        auto *unitItem = new QTableWidgetItem(displayUnit);
         auto *expItem = new QTableWidgetItem(QString::fromStdString(items[i]->getExpirationDate()));
 
         int daysLeft = core::DateUtils::getDaysUntil(items[i]->getExpirationDate(), currentDate);
@@ -385,6 +415,7 @@ void MainWindow::updateInventoryTable() {
 
 void MainWindow::updateRecipesList() {
     ui->recipesListWidget->clear();
+    auto &tm = TranslationManager::instance();
 
     int currentIndex = ui->recipesSortComboBox->currentIndex();
     if (currentIndex < 0) currentIndex = 0;
@@ -393,13 +424,17 @@ void MainWindow::updateRecipesList() {
     auto sortedRecipes = recipeRepo.getSortedRecipes(sortOption);
 
     for (const auto &recipe: sortedRecipes) {
-        ui->recipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+        QString rawTitle = QString::fromStdString(recipe.getTitle());
+        auto *item = new QListWidgetItem(tm.translateRecipeTitle(rawTitle));
+        item->setData(Qt::UserRole, rawTitle);
+        ui->recipesListWidget->addItem(item);
     }
 }
 
 void MainWindow::updateMealPlanTable() {
     ui->mealPlanTableWidget->setRowCount(0);
     const auto &entries = mealPlanner.getEntries();
+    auto &tm = TranslationManager::instance();
 
     for (int i = 0; i < static_cast<int>(entries.size()); ++i) {
         ui->mealPlanTableWidget->insertRow(i);
@@ -416,15 +451,16 @@ void MainWindow::updateMealPlanTable() {
         }
 
         QString formattedDay = formatDayWithDate(QString::fromStdString(entries[i].dayOfWeek));
+        QString displayRecipe = tm.translateRecipeTitle(QString::fromStdString(entries[i].recipeTitle));
         ui->mealPlanTableWidget->setItem(i, 0, new QTableWidgetItem(formattedDay));
         ui->mealPlanTableWidget->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(entries[i].time)));
-        ui->mealPlanTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(entries[i].recipeTitle)));
+        ui->mealPlanTableWidget->setItem(i, 2, new QTableWidgetItem(displayRecipe));
         ui->mealPlanTableWidget->setItem(i, 3, new QTableWidgetItem(prepStr));
         ui->mealPlanTableWidget->setItem(i, 4, new QTableWidgetItem(calStr));
     }
 
     double totalCal = mealPlanner.getTotalCalories(recipeRepo);
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
     ui->mealTotalCaloriesLabel->setText(
         isUk
             ? QString("<b>Загальна запланована калорійність:</b> %1 ккал").arg(totalCal)
@@ -435,7 +471,8 @@ void MainWindow::updateMealPlanTable() {
 void MainWindow::updateStatisticsTab() {
     std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     const auto &items = inventory.getItems();
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
 
     size_t solidCount = 0, liquidCount = 0, countableCount = 0;
     double totalSolidWeight = 0.0, totalLiquidVolume = 0.0, totalCountableQty = 0.0;
@@ -451,7 +488,7 @@ void MainWindow::updateStatisticsTab() {
     QVector<ExpiringItemInfo> expiringItems;
     QSet<QString> expiringNamesLower;
 
-    for (const auto &item : items) {
+    for (const auto &item: items) {
         if (item->getUnit() == "g") {
             solidCount++;
             totalSolidWeight += item->getAmount();
@@ -487,25 +524,28 @@ void MainWindow::updateStatisticsTab() {
     double avgCalories = 0.0;
     if (!recipes.empty()) {
         double sumCal = 0.0;
-        for (const auto &r : recipes) {
+        for (const auto &r: recipes) {
             sumCal += r.getCalories();
         }
         avgCalories = sumCal / static_cast<double>(recipes.size());
     }
 
     QString leftHtml = isUk
-        ? "<h2>📊 Аналітика кухні та комори</h2><h3>🧊 Розподіл запасів</h3><ul>"
-        : "<h2>📊 Kitchen &amp; Pantry Analytics</h2><h3>🧊 Pantry Stock Breakdown</h3><ul>";
+                           ? "<h2>📊 Аналітика кухні та комори</h2><h3>🧊 Розподіл запасів</h3><ul>"
+                           : "<h2>📊 Kitchen &amp; Pantry Analytics</h2><h3>🧊 Pantry Stock Breakdown</h3><ul>";
 
     if (isUk) {
         leftHtml += QString("<li><b>Усього інгредієнтів на зберіганні:</b> %1</li>").arg(items.size());
-        leftHtml += QString("<li><b>Сипучі / тверді:</b> %1 поз. (%2 g)</li>").arg(solidCount).arg(totalSolidWeight);
-        leftHtml += QString("<li><b>Рідкі:</b> %1 поз. (%2 ml)</li>").arg(liquidCount).arg(totalLiquidVolume);
-        leftHtml += QString("<li><b>Штучні:</b> %1 поз. (%2 pcs)</li>").arg(countableCount).arg(totalCountableQty);
+        leftHtml += QString("<li><b>Сипучі / тверді:</b> %1 поз. (%2 г)</li>").arg(solidCount).arg(totalSolidWeight);
+        leftHtml += QString("<li><b>Рідкі:</b> %1 поз. (%2 мл)</li>").arg(liquidCount).arg(totalLiquidVolume);
+        leftHtml += QString("<li><b>Штучні:</b> %1 поз. (%2 шт.)</li>").arg(countableCount).arg(totalCountableQty);
         leftHtml += "</ul><h3>🛡️ Стан свіжості</h3><ul>";
-        leftHtml += QString("<li><span style='color:#66bb6a;'><b>Свіжі (&gt; 3 дн.):</b></span> %1</li>").arg(freshCount);
-        leftHtml += QString("<li><span style='color:#ffca28;'><b>Скоро зіпсуються (0–3 дн.):</b></span> %1</li>").arg(expiringSoonCount);
-        leftHtml += QString("<li><span style='color:#ef5350;'><b>Протерміновані (&lt; 0 дн.):</b></span> %1</li>").arg(expiredCount);
+        leftHtml += QString("<li><span style='color:#66bb6a;'><b>Свіжі (&gt; 3 дн.):</b></span> %1</li>").
+                arg(freshCount);
+        leftHtml += QString("<li><span style='color:#ffca28;'><b>Скоро зіпсуються (0–3 дн.):</b></span> %1</li>").arg(
+            expiringSoonCount);
+        leftHtml += QString("<li><span style='color:#ef5350;'><b>Протерміновані (&lt; 0 дн.):</b></span> %1</li>").
+                arg(expiredCount);
         leftHtml += "</ul><h3>📖 Рецепти та план на тиждень</h3><ul>";
         leftHtml += QString("<li><b>Рецептів у книзі:</b> %1 (Доступні зараз: <b>%2</b>)</li>")
                 .arg(recipes.size()).arg(cookableNowCount);
@@ -517,13 +557,19 @@ void MainWindow::updateStatisticsTab() {
         leftHtml += "</ul>";
     } else {
         leftHtml += QString("<li><b>Total Stored Ingredients:</b> %1</li>").arg(items.size());
-        leftHtml += QString("<li><b>Solid Ingredients:</b> %1 item(s) (%2 g)</li>").arg(solidCount).arg(totalSolidWeight);
-        leftHtml += QString("<li><b>Liquid Ingredients:</b> %1 item(s) (%2 ml)</li>").arg(liquidCount).arg(totalLiquidVolume);
-        leftHtml += QString("<li><b>Countable Ingredients:</b> %1 item(s) (%2 pcs)</li>").arg(countableCount).arg(totalCountableQty);
+        leftHtml += QString("<li><b>Solid Ingredients:</b> %1 item(s) (%2 g)</li>").arg(solidCount).arg(
+            totalSolidWeight);
+        leftHtml += QString("<li><b>Liquid Ingredients:</b> %1 item(s) (%2 ml)</li>").arg(liquidCount).arg(
+            totalLiquidVolume);
+        leftHtml += QString("<li><b>Countable Ingredients:</b> %1 item(s) (%2 pcs)</li>").arg(countableCount).arg(
+            totalCountableQty);
         leftHtml += "</ul><h3>🛡️ Freshness Status</h3><ul>";
-        leftHtml += QString("<li><span style='color:#66bb6a;'><b>Fresh (&gt; 3 days):</b></span> %1</li>").arg(freshCount);
-        leftHtml += QString("<li><span style='color:#ffca28;'><b>Expiring Soon (0–3 days):</b></span> %1</li>").arg(expiringSoonCount);
-        leftHtml += QString("<li><span style='color:#ef5350;'><b>Expired (&lt; 0 days):</b></span> %1</li>").arg(expiredCount);
+        leftHtml += QString("<li><span style='color:#66bb6a;'><b>Fresh (&gt; 3 days):</b></span> %1</li>").
+                arg(freshCount);
+        leftHtml += QString("<li><span style='color:#ffca28;'><b>Expiring Soon (0–3 days):</b></span> %1</li>").arg(
+            expiringSoonCount);
+        leftHtml += QString("<li><span style='color:#ef5350;'><b>Expired (&lt; 0 days):</b></span> %1</li>").arg(
+            expiredCount);
         leftHtml += "</ul><h3>📖 Recipes &amp; Weekly Plan</h3><ul>";
         leftHtml += QString("<li><b>Recipes in Book:</b> %1 (Cookable right now: <b>%2</b>)</li>")
                 .arg(recipes.size()).arg(cookableNowCount);
@@ -540,27 +586,29 @@ void MainWindow::updateStatisticsTab() {
     QString rightHtml = isUk ? "<h2>⚠️ Радник порятунку продуктів</h2>" : "<h2>⚠️ Rescue Advisor</h2>";
     if (expiringItems.isEmpty()) {
         rightHtml += isUk
-            ? "<p style='color:#66bb6a;'><b>Усе чудово!</b> Немає продуктів, термін яких спливає протягом найближчих 3 днів.</p>"
-            : "<p style='color:#66bb6a;'><b>All good!</b> No ingredients are expiring within the next 3 days.</p>";
+                         ? "<p style='color:#66bb6a;'><b>Усе чудово!</b> Немає продуктів, термін яких спливає протягом найближчих 3 днів.</p>"
+                         : "<p style='color:#66bb6a;'><b>All good!</b> No ingredients are expiring within the next 3 days.</p>";
     } else {
         rightHtml += isUk
-            ? "<p>Ці інгредієнти скоро зіпсуються (ще придатні для приготування!):</p><ul>"
-            : "<p>These ingredients will expire soon (still safe to cook with!):</p><ul>";
+                         ? "<p>Ці інгредієнти скоро зіпсуються (ще придатні для приготування!):</p><ul>"
+                         : "<p>These ingredients will expire soon (still safe to cook with!):</p><ul>";
 
-        for (const auto &exp : expiringItems) {
+        for (const auto &exp: expiringItems) {
+            QString displayExpName = tm.translateIngredient(exp.name);
+            QString displayExpUnit = tm.translateUnit(exp.unit);
             QString badge;
             if (isUk) {
                 badge = (exp.daysLeft == 0)
-                    ? "<span style='color:#ff7043;'><b>Спливає СЬОГОДНІ!</b></span>"
-                    : QString("<span style='color:#ffca28;'>за %1 дн.</span>").arg(exp.daysLeft);
+                            ? "<span style='color:#ff7043;'><b>Спливає СЬОГОДНІ!</b></span>"
+                            : QString("<span style='color:#ffca28;'>за %1 дн.</span>").arg(exp.daysLeft);
                 rightHtml += QString("<li><b>%1</b> (%2 %3) — %4 (до %5)</li>")
-                        .arg(exp.name).arg(exp.amount).arg(exp.unit).arg(badge).arg(exp.expDate);
+                        .arg(displayExpName).arg(exp.amount).arg(displayExpUnit).arg(badge).arg(exp.expDate);
             } else {
                 badge = (exp.daysLeft == 0)
-                    ? "<span style='color:#ff7043;'><b>Expires TODAY!</b></span>"
-                    : QString("<span style='color:#ffca28;'>in %1 day(s)</span>").arg(exp.daysLeft);
+                            ? "<span style='color:#ff7043;'><b>Expires TODAY!</b></span>"
+                            : QString("<span style='color:#ffca28;'>in %1 day(s)</span>").arg(exp.daysLeft);
                 rightHtml += QString("<li><b>%1</b> (%2 %3) — %4 (until %5)</li>")
-                        .arg(exp.name).arg(exp.amount).arg(exp.unit).arg(badge).arg(exp.expDate);
+                        .arg(displayExpName).arg(exp.amount).arg(displayExpUnit).arg(badge).arg(exp.expDate);
             }
         }
         rightHtml += "</ul>";
@@ -578,33 +626,34 @@ void MainWindow::updateStatisticsTab() {
         );
 
         rightHtml += isUk
-            ? "<h3>🍳 Рекомендовані рецепти для порятунку продуктів:</h3>"
-            : "<h3>🍳 Recommended Recipes to Save Food:</h3>";
+                         ? "<h3>🍳 Рекомендовані рецепти для порятунку продуктів:</h3>"
+                         : "<h3>🍳 Recommended Recipes to Save Food:</h3>";
 
         if (rescueRecipes.empty()) {
             rightHtml += isUk
-                ? "<p>У книзі рецептів поки немає страв із цими інгредієнтами.</p>"
-                : "<p>No recipes in your book use these specific expiring ingredients yet.</p>";
+                             ? "<p>У книзі рецептів поки немає страв із цими інгредієнтами.</p>"
+                             : "<p>No recipes in your book use these specific expiring ingredients yet.</p>";
         } else {
             rightHtml += "<ul>";
-            for (const auto &r : rescueRecipes) {
+            for (const auto &r: rescueRecipes) {
                 bool readyNow = core::RecipeMatcher::canPrepare(r, inventory, currentDate);
+                QString displayTitle = tm.translateRecipeTitle(QString::fromStdString(r.getTitle()));
                 QString statusTag;
                 if (isUk) {
                     statusTag = readyNow
-                        ? "<span style='color:#66bb6a;'>[Можна готувати!]</span>"
-                        : "<span style='color:#b0b0b0;'>[Бракує деяких інгредієнтів]</span>";
+                                    ? "<span style='color:#66bb6a;'>[Можна готувати!]</span>"
+                                    : "<span style='color:#b0b0b0;'>[Бракує деяких інгредієнтів]</span>";
                     rightHtml += QString("<li><b>%1</b> (%2 хв, %3 ккал) %4</li>")
-                            .arg(QString::fromStdString(r.getTitle()))
+                            .arg(displayTitle)
                             .arg(r.getPrepTime())
                             .arg(r.getCalories())
                             .arg(statusTag);
                 } else {
                     statusTag = readyNow
-                        ? "<span style='color:#66bb6a;'>[Ready to Cook!]</span>"
-                        : "<span style='color:#b0b0b0;'>[Missing some items]</span>";
+                                    ? "<span style='color:#66bb6a;'>[Ready to Cook!]</span>"
+                                    : "<span style='color:#b0b0b0;'>[Missing some items]</span>";
                     rightHtml += QString("<li><b>%1</b> (%2 mins, %3 kcal) %4</li>")
-                            .arg(QString::fromStdString(r.getTitle()))
+                            .arg(displayTitle)
                             .arg(r.getPrepTime())
                             .arg(r.getCalories())
                             .arg(statusTag);
@@ -619,26 +668,34 @@ void MainWindow::updateStatisticsTab() {
 
 void MainWindow::displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit) {
     if (!targetTextEdit) return;
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
 
-    QString html = QString("<h2>%1</h2>").arg(QString::fromStdString(recipe.getTitle()));
+    QString rawTitle = QString::fromStdString(recipe.getTitle());
+    QString displayTitle = tm.translateRecipeTitle(rawTitle);
+
+    QString html = QString("<h2>%1</h2>").arg(displayTitle);
     html += isUk
-        ? QString("<p style='line-height: 1.4;'><b>⏱️ Час приготування:</b> %1 хв<br><b>🔥 Калорійність:</b> %2 ккал</p>")
-              .arg(recipe.getPrepTime()).arg(recipe.getCalories())
-        : QString("<p style='line-height: 1.4;'><b>⏱️ Prep Time:</b> %1 mins<br><b>🔥 Calories:</b> %2 kcal</p>")
-              .arg(recipe.getPrepTime()).arg(recipe.getCalories());
+                ? QString(
+                    "<p style='line-height: 1.4;'><b>⏱️ Час приготування:</b> %1 хв<br><b>🔥 Калорійність:</b> %2 ккал</p>")
+                .arg(recipe.getPrepTime()).arg(recipe.getCalories())
+                : QString(
+                    "<p style='line-height: 1.4;'><b>⏱️ Prep Time:</b> %1 mins<br><b>🔥 Calories:</b> %2 kcal</p>")
+                .arg(recipe.getPrepTime()).arg(recipe.getCalories());
 
     html += isUk ? "<h3>🛒 Необхідні інгредієнти:</h3><ul>" : "<h3>🛒 Required Ingredients:</h3><ul>";
     for (const auto &req: recipe.getRequirements()) {
+        QString ingName = tm.translateIngredient(QString::fromStdString(req.name));
+        QString ingUnit = tm.translateUnit(QString::fromStdString(req.unit));
         html += QString("<li><b>%1</b>: %2 %3</li>")
-                .arg(QString::fromStdString(req.name))
+                .arg(ingName)
                 .arg(req.requiredAmount)
-                .arg(QString::fromStdString(req.unit));
+                .arg(ingUnit);
     }
     html += "</ul>";
 
     html += isUk ? "<h3>📝 Інструкції:</h3>" : "<h3>📝 Instructions:</h3>";
-    QString rawInstructions = QString::fromStdString(recipe.getInstructions());
+    QString rawInstructions = tm.translateInstructions(rawTitle, QString::fromStdString(recipe.getInstructions()));
 
     if (rawInstructions.contains(';')) {
         QStringList steps = rawInstructions.split(';', Qt::SkipEmptyParts);
@@ -665,7 +722,7 @@ void MainWindow::onRecipeSelectionChanged() {
         return;
     }
 
-    std::string title = selectedItem->text().toStdString();
+    std::string title = selectedItem->data(Qt::UserRole).toString().toStdString();
     for (const auto &recipe: recipeRepo.getRecipes()) {
         if (recipe.getTitle() == title) {
             displayRecipeDetails(recipe, ui->recipeDetailsTextEdit);
@@ -677,7 +734,8 @@ void MainWindow::onRecipeSelectionChanged() {
 void MainWindow::onFindCookableRecipesClicked() {
     ui->cookableRecipesListWidget->clear();
     ui->cookableRecipeDetailsTextEdit->clear();
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
 
     std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     auto cookableRecipes = recipeRepo.getCookableRecipes(inventory, currentDate);
@@ -701,7 +759,10 @@ void MainWindow::onFindCookableRecipesClicked() {
     cookableRecipes = core::RecipeRepository::sortRecipes(cookableRecipes, sortOption);
 
     for (const auto &recipe: cookableRecipes) {
-        ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+        QString rawTitle = QString::fromStdString(recipe.getTitle());
+        auto *item = new QListWidgetItem(tm.translateRecipeTitle(rawTitle));
+        item->setData(Qt::UserRole, rawTitle);
+        ui->cookableRecipesListWidget->addItem(item);
     }
     spdlog::info("User found {} cookable recipe(s).", cookableRecipes.size());
 }
@@ -713,7 +774,7 @@ void MainWindow::onCookableRecipeSelectionChanged() {
         return;
     }
 
-    std::string title = selectedItem->text().toStdString();
+    std::string title = selectedItem->data(Qt::UserRole).toString().toStdString();
     for (const auto &recipe: recipeRepo.getRecipes()) {
         if (recipe.getTitle() == title) {
             displayRecipeDetails(recipe, ui->cookableRecipeDetailsTextEdit);
@@ -723,7 +784,8 @@ void MainWindow::onCookableRecipeSelectionChanged() {
 }
 
 void MainWindow::onCookRecipeClicked() {
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
     QListWidgetItem *selectedItem = ui->cookableRecipesListWidget->currentItem();
     if (!selectedItem) {
         QMessageBox::warning(
@@ -734,7 +796,9 @@ void MainWindow::onCookRecipeClicked() {
         return;
     }
 
-    std::string title = selectedItem->text().toStdString();
+    QString rawTitleQ = selectedItem->data(Qt::UserRole).toString();
+    std::string title = rawTitleQ.toStdString();
+    QString displayTitle = tm.translateRecipeTitle(rawTitleQ);
     const core::Recipe *targetRecipe = nullptr;
 
     for (const auto &recipe: recipeRepo.getRecipes()) {
@@ -764,7 +828,10 @@ void MainWindow::onCookRecipeClicked() {
             cookableRecipes = core::RecipeRepository::sortRecipes(cookableRecipes, sortOption);
 
             for (const auto &recipe: cookableRecipes) {
-                ui->cookableRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+                QString rTitle = QString::fromStdString(recipe.getTitle());
+                auto *item = new QListWidgetItem(tm.translateRecipeTitle(rTitle));
+                item->setData(Qt::UserRole, rTitle);
+                ui->cookableRecipesListWidget->addItem(item);
             }
         }
 
@@ -772,15 +839,18 @@ void MainWindow::onCookRecipeClicked() {
             this,
             isUk ? "Смачного! 🍽️" : "Bon Appétit! 🍽️",
             isUk
-                ? QString("Ви успішно приготували «%1»! Необхідні інгредієнти списано з комори.").arg(QString::fromStdString(title))
-                : QString("You successfully cooked '%1'! Required ingredients have been deducted from your pantry.").arg(QString::fromStdString(title))
+                ? QString("Ви успішно приготували «%1»! Необхідні інгредієнти списано з комори.").arg(displayTitle)
+                : QString("You successfully cooked '%1'! Required ingredients have been deducted from your pantry.").
+                arg(displayTitle)
         );
     } else {
         spdlog::warn("User failed to cook recipe: '{}'. Insufficient ingredients.", title);
         QMessageBox::critical(
             this,
             isUk ? "Помилка" : "Error",
-            isUk ? "У коморі недостатньо свіжих інгредієнтів для приготування цієї страви!" : "Not enough ingredients in your pantry to cook this recipe!"
+            isUk
+                ? "У коморі недостатньо свіжих інгредієнтів для приготування цієї страви!"
+                : "Not enough ingredients in your pantry to cook this recipe!"
         );
     }
 }
@@ -822,7 +892,8 @@ void MainWindow::onAddRecipeClicked() {
 }
 
 void MainWindow::onDeleteIngredientClicked() {
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
     int selectedRow = ui->inventoryTable->currentRow();
     const auto &items = inventory.getItems();
 
@@ -830,14 +901,17 @@ void MainWindow::onDeleteIngredientClicked() {
         QMessageBox::warning(
             this,
             isUk ? "Нічого не обрано" : "No Selection",
-            isUk ? "Будь ласка, спочатку оберіть рядок інгредієнта в таблиці!" : "Please select an ingredient row in the table first!"
+            isUk
+                ? "Будь ласка, спочатку оберіть рядок інгредієнта в таблиці!"
+                : "Please select an ingredient row in the table first!"
         );
         return;
     }
 
-    QString itemName = QString::fromStdString(items[selectedRow]->getName());
+    QString rawName = QString::fromStdString(items[selectedRow]->getName());
+    QString itemName = tm.translateIngredient(rawName);
     double itemAmount = items[selectedRow]->getAmount();
-    QString itemUnit = QString::fromStdString(items[selectedRow]->getUnit());
+    QString itemUnit = tm.translateUnit(QString::fromStdString(items[selectedRow]->getUnit()));
 
     auto reply = QMessageBox::question(
         this,
@@ -854,7 +928,7 @@ void MainWindow::onDeleteIngredientClicked() {
 
     if (inventory.removeIngredientAt(static_cast<size_t>(selectedRow))) {
         spdlog::info("User deleted ingredient: '{}' ({:.1f} {})",
-                     itemName.toStdString(), itemAmount, itemUnit.toStdString());
+                     rawName.toStdString(), itemAmount, items[selectedRow]->getUnit());
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
         updateInventoryTable();
         updateStatisticsTab();
@@ -937,9 +1011,11 @@ void MainWindow::onExportInventoryClicked() {
 }
 
 void MainWindow::onGenerateShoppingListClicked() {
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
-    QString selectedTitle = ui->shoppingRecipeComboBox->currentText();
-    if (selectedTitle.isEmpty()) {
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
+    QString rawTitle = ui->shoppingRecipeComboBox->currentData().toString();
+    QString displayTitle = ui->shoppingRecipeComboBox->currentText();
+    if (rawTitle.isEmpty()) {
         QMessageBox::warning(
             this,
             isUk ? "Попередження" : "Warning",
@@ -948,7 +1024,7 @@ void MainWindow::onGenerateShoppingListClicked() {
         return;
     }
 
-    std::string title = selectedTitle.toStdString();
+    std::string title = rawTitle.toStdString();
     std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     bool found = false;
 
@@ -971,8 +1047,8 @@ void MainWindow::onGenerateShoppingListClicked() {
             this,
             isUk ? "Список покупок" : "Shopping List",
             isUk
-                ? "У вас уже є всі необхідні свіжі інгредієнти в коморі для страви «" + selectedTitle + "»!"
-                : "You already have all the necessary ingredients in your pantry for " + selectedTitle + "!"
+                ? "У вас уже є всі необхідні свіжі інгредієнти в коморі для страви «" + displayTitle + "»!"
+                : "You already have all the necessary ingredients in your pantry for " + displayTitle + "!"
         );
         return;
     }
@@ -981,9 +1057,11 @@ void MainWindow::onGenerateShoppingListClicked() {
 
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->shoppingTableWidget->insertRow(i);
-        ui->shoppingTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i].name)));
+        ui->shoppingTableWidget->setItem(
+            i, 0, new QTableWidgetItem(tm.translateIngredient(QString::fromStdString(items[i].name))));
         ui->shoppingTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(items[i].amountToBuy)));
-        ui->shoppingTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].unit)));
+        ui->shoppingTableWidget->setItem(
+            i, 2, new QTableWidgetItem(tm.translateUnit(QString::fromStdString(items[i].unit))));
     }
 }
 
@@ -994,7 +1072,9 @@ void MainWindow::onExportShoppingListClicked() {
         QMessageBox::warning(
             this,
             isUk ? "Попередження експорту" : "Export Warning",
-            isUk ? "Список покупок порожній! Спочатку згенеруйте його." : "The shopping list is empty! Generate a shopping list first."
+            isUk
+                ? "Список покупок порожній! Спочатку згенеруйте його."
+                : "The shopping list is empty! Generate a shopping list first."
         );
         return;
     }
@@ -1034,13 +1114,15 @@ void MainWindow::onAddMealPlanClicked() {
     bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
     QString day = ui->mealDayComboBox->currentData().toString();
     QString time = ui->mealTimeEdit->time().toString("HH:mm");
-    QString recipeTitle = ui->mealRecipeComboBox->currentText();
+    QString recipeTitle = ui->mealRecipeComboBox->currentData().toString();
 
     if (recipeTitle.isEmpty()) {
         QMessageBox::warning(
             this,
             isUk ? "Попередження" : "Warning",
-            isUk ? "Немає доступних рецептів! Спочатку додайте рецепт." : "No recipes available! Please add a recipe first."
+            isUk
+                ? "Немає доступних рецептів! Спочатку додайте рецепт."
+                : "No recipes available! Please add a recipe first."
         );
         return;
     }
@@ -1060,7 +1142,9 @@ void MainWindow::onRemoveMealPlanClicked() {
         QMessageBox::warning(
             this,
             isUk ? "Нічого не обрано" : "No Selection",
-            isUk ? "Будь ласка, спочатку оберіть рядок запланованої страви!" : "Please select a scheduled meal row first!"
+            isUk
+                ? "Будь ласка, спочатку оберіть рядок запланованої страви!"
+                : "Please select a scheduled meal row first!"
         );
         return;
     }
@@ -1082,7 +1166,9 @@ void MainWindow::onClearMealPlanClicked() {
     auto reply = QMessageBox::question(
         this,
         isUk ? "Очищення розкладу" : "Clear Schedule",
-        isUk ? "Ви впевнені, що хочете очистити весь тижневий план харчування?" : "Are you sure you want to clear the entire weekly meal schedule?",
+        isUk
+            ? "Ви впевнені, що хочете очистити весь тижневий план харчування?"
+            : "Are you sure you want to clear the entire weekly meal schedule?",
         QMessageBox::Yes | QMessageBox::No
     );
 
@@ -1096,13 +1182,16 @@ void MainWindow::onClearMealPlanClicked() {
 }
 
 void MainWindow::onGenerateWeeklyShoppingClicked() {
-    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
     auto plannedRecipes = mealPlanner.getPlannedRecipes(recipeRepo);
     if (plannedRecipes.empty()) {
         QMessageBox::warning(
             this,
             isUk ? "Порожній розклад" : "Empty Schedule",
-            isUk ? "Ваш розклад харчування порожній! Спочатку додайте страви." : "Your meal schedule is empty! Add some meals first."
+            isUk
+                ? "Ваш розклад харчування порожній! Спочатку додайте страви."
+                : "Your meal schedule is empty! Add some meals first."
         );
         return;
     }
@@ -1119,16 +1208,20 @@ void MainWindow::onGenerateWeeklyShoppingClicked() {
         QMessageBox::information(
             this,
             isUk ? "Усе готово!" : "All Set!",
-            isUk ? "У вас уже є всі необхідні свіжі інгредієнти для всього тижневого плану!" : "You already have all the ingredients needed for your entire weekly meal plan!"
+            isUk
+                ? "У вас уже є всі необхідні свіжі інгредієнти для всього тижневого плану!"
+                : "You already have all the ingredients needed for your entire weekly meal plan!"
         );
         return;
     }
 
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         ui->shoppingTableWidget->insertRow(i);
-        ui->shoppingTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(items[i].name)));
+        ui->shoppingTableWidget->setItem(
+            i, 0, new QTableWidgetItem(tm.translateIngredient(QString::fromStdString(items[i].name))));
         ui->shoppingTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(items[i].amountToBuy)));
-        ui->shoppingTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(items[i].unit)));
+        ui->shoppingTableWidget->setItem(
+            i, 2, new QTableWidgetItem(tm.translateUnit(QString::fromStdString(items[i].unit))));
     }
 
     spdlog::info("Generated weekly shopping list from {} planned meals ({} missing item(s)).",
@@ -1146,6 +1239,7 @@ void MainWindow::onApplySmartFilterClicked() {
     int maxCalories = ui->filterMaxCaloriesSpinBox->value();
     int maxTime = ui->filterMaxTimeSpinBox->value();
     QString ingredientQuery = ui->filterIngredientLineEdit->text().trimmed().toLower();
+    auto &tm = TranslationManager::instance();
 
     auto filtered = core::DataFilter<core::Recipe>::filterBy(
         recipeRepo.getRecipes(),
@@ -1175,7 +1269,10 @@ void MainWindow::onApplySmartFilterClicked() {
     ui->filteredRecipeDetailsTextEdit->clear();
 
     for (const auto &recipe: filtered) {
-        ui->filteredRecipesListWidget->addItem(QString::fromStdString(recipe.getTitle()));
+        QString rawTitle = QString::fromStdString(recipe.getTitle());
+        auto *item = new QListWidgetItem(tm.translateRecipeTitle(rawTitle));
+        item->setData(Qt::UserRole, rawTitle);
+        ui->filteredRecipesListWidget->addItem(item);
     }
 
     spdlog::info("Smart filter applied (maxCal={}, maxTime={}, ingredient='{}'): {} recipe(s) matched.",
@@ -1196,7 +1293,7 @@ void MainWindow::onFilteredRecipeSelectionChanged() {
         return;
     }
 
-    std::string title = selectedItem->text().toStdString();
+    std::string title = selectedItem->data(Qt::UserRole).toString().toStdString();
     for (const auto &recipe: recipeRepo.getRecipes()) {
         if (recipe.getTitle() == title) {
             displayRecipeDetails(recipe, ui->filteredRecipeDetailsTextEdit);
@@ -1212,7 +1309,9 @@ void MainWindow::onQuickAddToMealPlanClicked() {
         QMessageBox::warning(
             this,
             isUk ? "Нічого не обрано" : "No Selection",
-            isUk ? "Будь ласка, спочатку оберіть рецепт із відфільтрованого списку!" : "Please select a recipe from the filtered list first!"
+            isUk
+                ? "Будь ласка, спочатку оберіть рецепт із відфільтрованого списку!"
+                : "Please select a recipe from the filtered list first!"
         );
         return;
     }
@@ -1220,22 +1319,23 @@ void MainWindow::onQuickAddToMealPlanClicked() {
     QString day = ui->quickScheduleDayComboBox->currentData().toString();
     QString displayDay = ui->quickScheduleDayComboBox->currentText();
     QString time = ui->quickScheduleTimeEdit->time().toString("HH:mm");
-    QString recipeTitle = selectedItem->text();
+    QString rawRecipeTitle = selectedItem->data(Qt::UserRole).toString();
+    QString displayRecipeTitle = selectedItem->text();
 
-    mealPlanner.addMeal(day.toStdString(), time.toStdString(), recipeTitle.toStdString());
+    mealPlanner.addMeal(day.toStdString(), time.toStdString(), rawRecipeTitle.toStdString());
     core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
     updateMealPlanTable();
     updateStatisticsTab();
 
     spdlog::info("Quick-scheduled filtered recipe '{}' on {} at {}",
-                 recipeTitle.toStdString(), day.toStdString(), time.toStdString());
+                 rawRecipeTitle.toStdString(), day.toStdString(), time.toStdString());
 
     QMessageBox::information(
         this,
         isUk ? "Додано до розкладу" : "Added to Schedule",
         isUk
-            ? QString("«%1» заплановано на %2 о %3!").arg(recipeTitle, displayDay, time)
-            : QString("'%1' scheduled for %2 at %3!").arg(recipeTitle, displayDay, time)
+            ? QString("«%1» заплановано на %2 о %3!").arg(displayRecipeTitle, displayDay, time)
+            : QString("'%1' scheduled for %2 at %3!").arg(displayRecipeTitle, displayDay, time)
     );
 }
 

@@ -15,6 +15,11 @@ class TranslationManager {
     QMap<QString, QString> ukTexts;
     QMap<QString, QString> enTexts;
 
+    QMap<QString, QString> ingToUk;
+    QMap<QString, QString> unitToUk;
+    QMap<QString, QString> recipeTitleToUk;
+    QMap<QString, QString> recipeInstrToUk;
+
     TranslationManager();
 
 public:
@@ -24,6 +29,11 @@ public:
     Language getCurrentLanguage() const;
 
     QString tr(const QString &key) const;
+
+    QString translateIngredient(const QString &enName) const;
+    QString translateUnit(const QString &enUnit) const;
+    QString translateRecipeTitle(const QString &enTitle) const;
+    QString translateInstructions(const QString &enTitle, const QString &rawInstructions) const;
 };
 
 #endif //TRANSLATIONMANAGER_H
