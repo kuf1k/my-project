@@ -6,8 +6,8 @@
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>950</width>
-                <height>620</height>
+                <width>980</width>
+                <height>630</height>
             </rect>
         </property>
         <property name="windowTitle">
@@ -486,6 +486,63 @@
                                                     </layout>
                                                 </item>
                                             </layout>
+                                        </item>
+                                    </layout>
+                                </item>
+                            </layout>
+                        </widget>
+
+                        <!-- Statistics & Analytics -->
+                        <widget class="QWidget" name="tabStatistics">
+                            <attribute name="title">
+                                <string>📊 Statistics</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="statisticsMainLayout">
+                                <item>
+                                    <layout class="QHBoxLayout" name="statisticsContentLayout">
+                                        <item>
+                                            <widget class="QTextEdit" name="pantryStatsTextEdit">
+                                                <property name="readOnly">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="placeholderText">
+                                                    <string>Kitchen &amp; Pantry statistics summary...</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QTextEdit" name="expiringRescueTextEdit">
+                                                <property name="readOnly">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="placeholderText">
+                                                    <string>Expiring soon items &amp; rescue recipes...</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                                <item>
+                                    <layout class="QHBoxLayout" name="statisticsBottomLayout">
+                                        <item>
+                                            <spacer name="statisticsSpacer">
+                                                <property name="orientation">
+                                                    <enum>Qt::Horizontal</enum>
+                                                </property>
+                                                <property name="sizeHint" stdset="0">
+                                                    <size>
+                                                        <width>40</width>
+                                                        <height>20</height>
+                                                    </size>
+                                                </property>
+                                            </spacer>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="refreshStatisticsButton">
+                                                <property name="text">
+                                                    <string>🔄 Refresh Analytics</string>
+                                                </property>
+                                            </widget>
                                         </item>
                                     </layout>
                                 </item>
