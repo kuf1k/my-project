@@ -375,14 +375,14 @@ int main(int argc, char *argv[]) {
         "QPushButton:hover { background-color: #3e3e3e; border-color: #555555; }"
         "QPushButton:pressed { background-color: #2a2a2a; }"
 
-        "#addIngredientButton, #cookRecipeButton, #addRecipeButton, #findRecipesButton, #addMealPlanButton, #generateShoppingListButton, #generateWeeklyShoppingButton, #applySmartFilterButton, #quickAddToMealPlanButton {"
+        "#addIngredientButton, #cookRecipeButton, #addRecipeButton, #findRecipesButton, #addMealPlanButton, #generateShoppingListButton, #generateWeeklyShoppingButton, #applySmartFilterButton, #quickAddToMealPlanButton, #languageButton {"
         "    background-color: #2b5b84;"
         "    border-color: #346c9e;"
         "}"
-        "#addIngredientButton:hover, #cookRecipeButton:hover, #addRecipeButton:hover, #findRecipesButton:hover, #generateShoppingListButton:hover, #addMealPlanButton:hover, #generateWeeklyShoppingButton:hover, #applySmartFilterButton:hover, #quickAddToMealPlanButton:hover {"
+        "#addIngredientButton:hover, #cookRecipeButton:hover, #addRecipeButton:hover, #findRecipesButton:hover, #generateShoppingListButton:hover, #addMealPlanButton:hover, #generateWeeklyShoppingButton:hover, #applySmartFilterButton:hover, #quickAddToMealPlanButton:hover, #languageButton:hover {"
         "    background-color: #346c9e;"
         "}"
-        "#addIngredientButton:pressed, #cookRecipeButton:pressed, #addRecipeButton:pressed, #findRecipesButton:pressed, #generateShoppingListButton:pressed, #addMealPlanButton:pressed, #generateWeeklyShoppingButton:pressed, #applySmartFilterButton:pressed, #quickAddToMealPlanButton:pressed {"
+        "#addIngredientButton:pressed, #cookRecipeButton:pressed, #addRecipeButton:pressed, #findRecipesButton:pressed, #generateShoppingListButton:pressed, #addMealPlanButton:pressed, #generateWeeklyShoppingButton:pressed, #applySmartFilterButton:pressed, #quickAddToMealPlanButton:pressed, #languageButton:pressed {"
         "    background-color: #23496c;"
         "}"
 

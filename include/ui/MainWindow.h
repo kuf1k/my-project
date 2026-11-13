@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTextEdit>
+#include <QPushButton>
 #include "core/Inventory.h"
 #include "core/RecipeRepository.h"
 #include "core/ShoppingList.h"
@@ -71,8 +72,11 @@ private slots:
 
     void onRefreshStatisticsClicked();
 
+    void onToggleLanguageClicked();
+
 private:
     Ui::MainWindow *ui;
+    QPushButton *languageButton = nullptr;
     core::Inventory inventory;
     core::RecipeRepository recipeRepo;
     core::ShoppingList shoppingList;
@@ -101,6 +105,8 @@ private:
     void updateMealPlanTable();
 
     void updateStatisticsTab();
+
+    void retranslateUi();
 
     void displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit);
 
