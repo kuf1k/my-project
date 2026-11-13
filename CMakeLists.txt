@@ -67,7 +67,9 @@ add_executable(MainProject src/main.cpp
         src/ui/AddRecipeDialog.cpp
         src/ui/AddRecipeDialog.ui
         src/core/IngredientValidator.cpp
-        src/core/MealPlanner.cpp)
+        src/core/MealPlanner.cpp
+        src/ui/TranslationManager.cpp
+        include/ui/TranslationManager.h)
 
 # Link nlohmann_json to the main executable
 target_link_libraries(MainProject PRIVATE nlohmann_json::nlohmann_json Qt6::Widgets spdlog::spdlog_header_only)
