@@ -137,7 +137,7 @@ namespace core {
         return total;
     }
 
-    double Inventory::getIngredientAmount(const std::string &name, const std::string &unit) const {
+    double Inventory::getIngredientAmount(const std::string &name, const std::string &unit, const std::string &currentDate) const {
         auto toLower = [](const std::string &str) {
             std::string res = str;
             std::transform(res.begin(), res.end(), res.begin(),
@@ -155,10 +155,15 @@ namespace core {
         return total;
     }
 
-    bool Inventory::consumeRecipe(const Recipe &recipe) {
+    bool Inventory::consumeRecipe(const Recipe &recipe, const std::string &currentDate) {
         if (!RecipeMatcher::canPrepare(recipe, *this)) {
             return false;
         }
+
+        std::sort(items.begin(), items.end(),
+                  [](const std::unique_ptr<Ingredient> &a, const std::unique_ptr<Ingredient> &b) {
+                      return a->getExpirationDate() < b->getExpirationDate();
+                  });
 
         auto toLower = [](const std::string &str) {
             std::string res = str;
@@ -172,7 +177,10 @@ namespace core {
             std::string reqNameLower = toLower(req.name);
 
             for (auto it = items.begin(); it != items.end() && amountNeeded > 0;) {
-                if (toLower((*it)->getName()) == reqNameLower && (*it)->getUnit() == req.unit) {
+                bool isExpired = !currentDate.empty() &&
+                                 (*it)->getFreshnessStatus(currentDate) == FreshnessStatus::Expired;
+
+                if (!isExpired && toLower((*it)->getName()) == reqNameLower && (*it)->getUnit() == req.unit) {
                     double available = (*it)->getAmount();
 
                     if (available <= amountNeeded) {

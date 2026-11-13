@@ -2,9 +2,9 @@
 #include <iostream>
 
 namespace core {
-    bool RecipeMatcher::canPrepare(const Recipe &recipe, const Inventory &inventory) {
+    bool RecipeMatcher::canPrepare(const Recipe &recipe, const Inventory &inventory,const std::string &currentDate) {
         for (const auto &req: recipe.getRequirements()) {
-            double available = inventory.getIngredientAmount(req.name,req.unit);
+            double available = inventory.getIngredientAmount(req.name,req.unit, currentDate);
             if (available < req.requiredAmount) {
                 return false;
             }
@@ -12,7 +12,7 @@ namespace core {
         return true;
     }
 
-    void RecipeMatcher::checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory) {
+    void RecipeMatcher::checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory, const std::string &currentDate) {
         std::cout << "\n--- Recipe Check ---\n";
         std::cout << recipe.getTitle() << ": \n";
         bool fullyAvailable = true;

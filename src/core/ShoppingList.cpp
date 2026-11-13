@@ -3,12 +3,12 @@
 #include <iostream>
 
 namespace core {
-    void ShoppingList::generateForRecipe(const Recipe &recipe, const Inventory &inventory) {
+    void ShoppingList::generateForRecipe(const Recipe &recipe, const Inventory &inventory, const std::string &currentDate) {
         std::vector<Recipe> singleRecipe = {recipe};
-        generateForRecipes(singleRecipe, inventory);
+        generateForRecipes(singleRecipe, inventory, currentDate);
     }
 
-    void ShoppingList::generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory) {
+    void ShoppingList::generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory, const std::string &currentDate) {
         clear();
 
         struct RequiredIitem {
@@ -23,7 +23,7 @@ namespace core {
             }
         }
         for (const auto &[name, req]: totalRequirements) {
-            double available = inventory.getIngredientAmount(name,req.unit);
+            double available = inventory.getIngredientAmount(name,req.unit, currentDate);
 
             if (available < req.amount) {
                 double shortage = req.amount - available;

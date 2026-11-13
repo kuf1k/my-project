@@ -22,7 +22,7 @@ namespace core {
 
         void printAllRecipes() const;
 
-        std::vector<Recipe> getCookableRecipes(const Inventory &inventory) const;
+        std::vector<Recipe> getCookableRecipes(const Inventory &inventory,const std::string &currentDate = "") const;
 
         size_t getRecipesCount() const;
 

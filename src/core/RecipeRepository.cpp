@@ -30,10 +30,10 @@ namespace core {
         }
     }
 
-    std::vector<Recipe> RecipeRepository::getCookableRecipes(const Inventory &inventory) const {
+    std::vector<Recipe> RecipeRepository::getCookableRecipes(const Inventory &inventory, const std::string &currentDate ) const {
         std::vector<Recipe> cookable;
         for (const auto &recipe: recipes) {
-            if (RecipeMatcher::canPrepare(recipe, inventory)) {
+            if (RecipeMatcher::canPrepare(recipe, inventory,currentDate)) {
                 cookable.push_back(recipe);
             }
         }

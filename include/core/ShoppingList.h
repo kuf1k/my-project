@@ -18,9 +18,9 @@ namespace core {
     public:
         ShoppingList() = default;
 
-        void generateForRecipe(const Recipe &recipe, const Inventory &inventory);
+        void generateForRecipe(const Recipe &recipe, const Inventory &inventory, const std::string &currentDate = "");
 
-        void generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory);
+        void generateForRecipes(const std::vector<Recipe> &recipes, const Inventory &inventory, const std::string &currentDate = "");
 
         const std::vector<ShoppingListItem> &getItems() const;
 

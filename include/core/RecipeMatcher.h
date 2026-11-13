@@ -6,9 +6,9 @@
 namespace core {
     class RecipeMatcher {
     public:
-        static bool canPrepare(const Recipe &recipe, const Inventory &inventory);
+        static bool canPrepare(const Recipe &recipe, const Inventory &inventory, const std::string &currentDate = "");
 
-        static void checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory);
+        static void checkRecipeAvailability(const Recipe &recipe, const Inventory &inventory, const std::string &currentDate = "");
     };
 }
 #endif //RECIPEMATCHER_H
