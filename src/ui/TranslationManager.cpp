@@ -146,6 +146,9 @@ TranslationManager::TranslationManager() {
     ukTexts["btn_add_req"] = "➕ Додати інгредієнт";
     enTexts["btn_add_req"] = "➕ Add Requirement";
 
+    ukTexts["btn_add_recipe"] = "➕ Додати власний рецепт";
+    enTexts["btn_add_recipe"] = "➕ Add Custom Recipe";
+
     ukTexts["btn_remove_req"] = "❌ Видалити вибране";
     enTexts["btn_remove_req"] = "❌ Remove Selected";
 

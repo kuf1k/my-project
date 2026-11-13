@@ -1,5 +1,6 @@
 #include "ui/AddRecipeDialog.h"
 #include "ui_AddRecipeDialog.h"
+#include "ui/TranslationManager.h"
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QPushButton>
@@ -11,8 +12,46 @@ AddRecipeDialog::AddRecipeDialog(QWidget *parent)
     : QDialog(parent), ui(new Ui::AddRecipeDialog), createdRecipe("") {
     ui->setupUi(this);
 
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
+
+    setWindowTitle(isUk ? "➕ Додати власний рецепт" : "➕ Add Custom Recipe");
+    ui->labelTitle->setText(tm.tr("lbl_title"));
+    ui->labelPrepTime->setText(isUk ? "Час готування:" : "Prep Time:");
+    ui->labelCalories->setText(isUk ? "Калорійність:" : "Calories:");
+    ui->labelInstructions->setText(tm.tr("lbl_instructions"));
+    ui->labelReqTitle->setText(
+        isUk ? "<b>🛒 Необхідні інгредієнти:</b>" : "<b>🛒 Required Ingredients:</b>"
+    );
+
+    ui->titleLineEdit->setPlaceholderText(isUk ? "напр. Homemade Pizza" : "e.g. Homemade Pizza");
+    ui->prepTimeSpinBox->setSuffix(isUk ? " хв" : " mins");
+    ui->caloriesSpinBox->setSuffix(isUk ? " ккал" : " kcal");
+    ui->instructionsTextEdit->setPlaceholderText(
+        isUk ? "Введіть кроки приготування..." : "Enter cooking steps..."
+    );
+    ui->reqNameEdit->setPlaceholderText(
+        isUk ? "Назва інгредієнта (напр. Flour)" : "Ingredient name (e.g. Flour)"
+    );
+
+    ui->addReqButton->setText(tm.tr("btn_add_req"));
+    ui->removeReqButton->setText(
+        isUk ? "🗑️ Видалити вибраний інгредієнт" : "🗑️ Remove Selected Ingredient"
+    );
+    ui->cancelButton->setText(tm.tr("btn_cancel"));
+    ui->saveButton->setText(tm.tr("btn_save"));
+
+    ui->reqUnitComboBox->clear();
+    ui->reqUnitComboBox->addItem(tm.translateUnit("g"), "g");
+    ui->reqUnitComboBox->addItem(tm.translateUnit("ml"), "ml");
+    ui->reqUnitComboBox->addItem(tm.translateUnit("pcs"), "pcs");
+
     ui->requirementsTable->setColumnCount(3);
-    ui->requirementsTable->setHorizontalHeaderLabels({"Ingredient Name", "Amount", "Unit"});
+    ui->requirementsTable->setHorizontalHeaderLabels({
+        isUk ? "Назва інгредієнта" : "Ingredient Name",
+        tm.tr("inv_header_amount"),
+        tm.tr("inv_header_unit")
+    });
     ui->requirementsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     QStringList knownNames;
@@ -51,23 +90,29 @@ void AddRecipeDialog::onReqNameChanged(const QString &text) {
 
     auto res = validator.validate(trimmed.toStdString());
     if (res.isKnown) {
-        int index = ui->reqUnitComboBox->findText(QString::fromStdString(res.expectedUnit));
+        int index = ui->reqUnitComboBox->findData(QString::fromStdString(res.expectedUnit));
         if (index != -1 && ui->reqUnitComboBox->currentIndex() != index) {
             ui->reqUnitComboBox->setCurrentIndex(index);
         }
     }
 }
 
-
 void AddRecipeDialog::onAddRequirementClicked() {
+    auto &tm = TranslationManager::instance();
+    bool isUk = (tm.getCurrentLanguage() == Language::Ukrainian);
     QString name = ui->reqNameEdit->text().trimmed();
     if (name.isEmpty()) {
-        QMessageBox::warning(this, "Validation Error", "Ingredient name cannot be empty!");
+        QMessageBox::warning(
+            this,
+            isUk ? "Помилка валідації" : "Validation Error",
+            isUk ? "Назва інгредієнта не може бути порожньою!" : "Ingredient name cannot be empty!"
+        );
         return;
     }
 
     double amount = ui->reqAmountSpinBox->value();
-    QString unit = ui->reqUnitComboBox->currentText();
+    QString canonicalUnit = ui->reqUnitComboBox->currentData().toString();
+    QString displayUnit = ui->reqUnitComboBox->currentText();
 
     auto validation = validator.validate(name.toStdString());
 
@@ -78,8 +123,10 @@ void AddRecipeDialog::onAddRequirementClicked() {
 
         auto reply = QMessageBox::question(
             this,
-            "Possible Typo",
-            QString("Did you mean '%1' instead of '%2'?").arg(suggestion, name),
+            isUk ? "Можлива одруківка" : "Possible Typo",
+            isUk
+                ? QString("Можливо, ви мали на увазі «%1» замість «%2»?").arg(suggestion, name)
+                : QString("Did you mean '%1' instead of '%2'?").arg(suggestion, name),
             QMessageBox::Yes | QMessageBox::No
         );
 
@@ -88,25 +135,30 @@ void AddRecipeDialog::onAddRequirementClicked() {
             ui->reqNameEdit->setText(name);
             validation = validator.validate(name.toStdString());
             if (validation.isKnown) {
-                int index = ui->reqUnitComboBox->findText(QString::fromStdString(validation.expectedUnit));
+                int index = ui->reqUnitComboBox->findData(QString::fromStdString(validation.expectedUnit));
                 if (index != -1) {
                     ui->reqUnitComboBox->setCurrentIndex(index);
-                    unit = ui->reqUnitComboBox->currentText();
+                    canonicalUnit = ui->reqUnitComboBox->currentData().toString();
+                    displayUnit = ui->reqUnitComboBox->currentText();
                 }
             }
         }
     }
-    if (validation.isKnown && validation.expectedUnit != unit.toStdString()) {
-        QString expectedUnitQ = QString::fromStdString(validation.expectedUnit);
+
+    if (validation.isKnown && validation.expectedUnit != canonicalUnit.toStdString()) {
+        QString expectedUnitQ = tm.translateUnit(QString::fromStdString(validation.expectedUnit));
 
         spdlog::warn("Unit mismatch in AddRecipeDialog for '{}': selected '{}', expected '{}'",
-                     name.toStdString(), unit.toStdString(), validation.expectedUnit);
+                     name.toStdString(), canonicalUnit.toStdString(), validation.expectedUnit);
 
         auto reply = QMessageBox::question(
             this,
-            "Unusual Measurement Unit",
-            QString("'%1' is typically measured in '%2', not '%3'.\nAre you sure you want to add it in '%3'?")
-            .arg(name, expectedUnitQ, unit),
+            isUk ? "Нетипова одиниця виміру" : "Unusual Measurement Unit",
+            isUk
+                ? QString("«%1» зазвичай вимірюється у «%2», а не «%3».\nВи впевнені, що хочете додати у «%3»?")
+                      .arg(name, expectedUnitQ, displayUnit)
+                : QString("'%1' is typically measured in '%2', not '%3'.\nAre you sure you want to add it in '%3'?")
+                      .arg(name, expectedUnitQ, displayUnit),
             QMessageBox::Yes | QMessageBox::No
         );
 
@@ -114,12 +166,13 @@ void AddRecipeDialog::onAddRequirementClicked() {
             return;
         }
     }
+
     bool merged = false;
     for (int i = 0; i < ui->requirementsTable->rowCount(); ++i) {
         QString existingName = ui->requirementsTable->item(i, 0)->text();
-        QString existingUnit = ui->requirementsTable->item(i, 2)->text();
+        QString existingCanonicalUnit = ui->requirementsTable->item(i, 2)->data(Qt::UserRole).toString();
 
-        if (existingName.compare(name, Qt::CaseInsensitive) == 0 && existingUnit == unit) {
+        if (existingName.compare(name, Qt::CaseInsensitive) == 0 && existingCanonicalUnit == canonicalUnit) {
             double existingAmount = ui->requirementsTable->item(i, 1)->text().toDouble();
             ui->requirementsTable->item(i, 1)->setText(QString::number(existingAmount + amount));
             merged = true;
@@ -132,7 +185,10 @@ void AddRecipeDialog::onAddRequirementClicked() {
         ui->requirementsTable->insertRow(row);
         ui->requirementsTable->setItem(row, 0, new QTableWidgetItem(name));
         ui->requirementsTable->setItem(row, 1, new QTableWidgetItem(QString::number(amount)));
-        ui->requirementsTable->setItem(row, 2, new QTableWidgetItem(unit));
+
+        auto *unitItem = new QTableWidgetItem(displayUnit);
+        unitItem->setData(Qt::UserRole, canonicalUnit);
+        ui->requirementsTable->setItem(row, 2, unitItem);
     }
 
     ui->reqNameEdit->clear();
@@ -140,23 +196,37 @@ void AddRecipeDialog::onAddRequirementClicked() {
 }
 
 void AddRecipeDialog::onRemoveRequirementClicked() {
+    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
     int currentRow = ui->requirementsTable->currentRow();
     if (currentRow >= 0) {
         ui->requirementsTable->removeRow(currentRow);
     } else {
-        QMessageBox::warning(this, "Selection Error", "Please select an ingredient to remove!");
+        QMessageBox::warning(
+            this,
+            isUk ? "Помилка вибору" : "Selection Error",
+            isUk ? "Будь ласка, оберіть інгредієнт для видалення!" : "Please select an ingredient to remove!"
+        );
     }
 }
 
 void AddRecipeDialog::onSaveClicked() {
+    bool isUk = (TranslationManager::instance().getCurrentLanguage() == Language::Ukrainian);
     QString title = ui->titleLineEdit->text().trimmed();
     if (title.isEmpty()) {
-        QMessageBox::warning(this, "Validation Error", "Recipe title cannot be empty!");
+        QMessageBox::warning(
+            this,
+            isUk ? "Помилка валідації" : "Validation Error",
+            isUk ? "Назва рецепта не може бути порожньою!" : "Recipe title cannot be empty!"
+        );
         return;
     }
 
     if (ui->requirementsTable->rowCount() == 0) {
-        QMessageBox::warning(this, "Validation Error", "Please add at least one required ingredient!");
+        QMessageBox::warning(
+            this,
+            isUk ? "Помилка валідації" : "Validation Error",
+            isUk ? "Будь ласка, додайте хоча б один необхідний інгредієнт!" : "Please add at least one required ingredient!"
+        );
         return;
     }
 
@@ -168,7 +238,7 @@ void AddRecipeDialog::onSaveClicked() {
     for (int i = 0; i < ui->requirementsTable->rowCount(); ++i) {
         std::string reqName = ui->requirementsTable->item(i, 0)->text().toStdString();
         double reqAmount = ui->requirementsTable->item(i, 1)->text().toDouble();
-        std::string reqUnit = ui->requirementsTable->item(i, 2)->text().toStdString();
+        std::string reqUnit = ui->requirementsTable->item(i, 2)->data(Qt::UserRole).toString().toStdString();
 
         createdRecipe.addRequirement(reqName, reqAmount, reqUnit);
     }
