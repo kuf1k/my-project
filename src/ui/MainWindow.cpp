@@ -16,6 +16,7 @@
 #include <QStandardPaths>
 #include <QDate>
 #include <QTime>
+#include <QMap>
 #include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -75,6 +76,24 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+QString MainWindow::formatDayWithDate(const QString &dayName) const {
+    static const QMap<QString, int> dayNumbers = {
+        {"Monday", 1}, {"Tuesday", 2}, {"Wednesday", 3}, {"Thursday", 4},
+        {"Friday", 5}, {"Saturday", 6}, {"Sunday", 7}
+    };
+
+    int targetDay = dayNumbers.value(dayName, 0);
+    if (targetDay == 0) {
+        return dayName;
+    }
+
+    QDate today = QDate::currentDate();
+    int diff = (targetDay - today.dayOfWeek() + 7) % 7;
+    QDate targetDate = today.addDays(diff);
+
+    return QString("%1 (%2)").arg(dayName, targetDate.toString("dd.MM"));
+}
+
 void MainWindow::setupSortComboBoxes() {
     QStringList options = {
         "By Name (A-Z)",
@@ -94,7 +113,9 @@ void MainWindow::setupMealPlannerControls() {
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
     };
     ui->mealDayComboBox->clear();
-    ui->mealDayComboBox->addItems(days);
+    for (const QString &day : days) {
+        ui->mealDayComboBox->addItem(formatDayWithDate(day), day);
+    }
     ui->mealTimeEdit->setTime(QTime(10, 0));
 }
 
@@ -103,7 +124,9 @@ void MainWindow::setupSmartFilterControls() {
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
     };
     ui->quickScheduleDayComboBox->clear();
-    ui->quickScheduleDayComboBox->addItems(days);
+    for (const QString &day : days) {
+        ui->quickScheduleDayComboBox->addItem(formatDayWithDate(day), day);
+    }
     ui->quickScheduleTimeEdit->setTime(QTime(12, 0));
 }
 
@@ -219,7 +242,8 @@ void MainWindow::updateMealPlanTable() {
             }
         }
 
-        ui->mealPlanTableWidget->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(entries[i].dayOfWeek)));
+        QString formattedDay = formatDayWithDate(QString::fromStdString(entries[i].dayOfWeek));
+        ui->mealPlanTableWidget->setItem(i, 0, new QTableWidgetItem(formattedDay));
         ui->mealPlanTableWidget->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(entries[i].time)));
         ui->mealPlanTableWidget->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(entries[i].recipeTitle)));
         ui->mealPlanTableWidget->setItem(i, 3, new QTableWidgetItem(prepStr));
@@ -562,7 +586,7 @@ void MainWindow::onExportShoppingListClicked() {
 }
 
 void MainWindow::onAddMealPlanClicked() {
-    QString day = ui->mealDayComboBox->currentText();
+    QString day = ui->mealDayComboBox->currentData().toString();
     QString time = ui->mealTimeEdit->time().toString("HH:mm");
     QString recipeTitle = ui->mealRecipeComboBox->currentText();
 
@@ -717,7 +741,8 @@ void MainWindow::onQuickAddToMealPlanClicked() {
         return;
     }
 
-    QString day = ui->quickScheduleDayComboBox->currentText();
+    QString day = ui->quickScheduleDayComboBox->currentData().toString();
+    QString displayDay = ui->quickScheduleDayComboBox->currentText();
     QString time = ui->quickScheduleTimeEdit->time().toString("HH:mm");
     QString recipeTitle = selectedItem->text();
 
@@ -730,7 +755,7 @@ void MainWindow::onQuickAddToMealPlanClicked() {
 
     QMessageBox::information(this, "Added to Schedule",
                              QString("'%1' scheduled for %2 at %3!")
-                             .arg(recipeTitle, day, time));
+                             .arg(recipeTitle, displayDay, time));
 }
 
 void MainWindow::onRecipesSortChanged(int index) {

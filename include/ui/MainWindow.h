@@ -99,6 +99,8 @@ private:
     void updateMealPlanTable();
 
     void displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit);
+
+    QString formatDayWithDate(const QString &dayName) const;
 };
 
 #endif // MAINWINDOW_H
