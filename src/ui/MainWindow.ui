@@ -6,8 +6,8 @@
             <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>900</width>
-                <height>600</height>
+                <width>950</width>
+                <height>620</height>
             </rect>
         </property>
         <property name="windowTitle">
@@ -363,6 +363,129 @@
                                                     <string>🛒 Generate Weekly Shopping List</string>
                                                 </property>
                                             </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                            </layout>
+                        </widget>
+
+                        <!-- Smart Filter -->
+                        <widget class="QWidget" name="tabSmartFilter">
+                            <attribute name="title">
+                                <string>🎛️ Smart Filter</string>
+                            </attribute>
+                            <layout class="QVBoxLayout" name="smartFilterMainLayout">
+                                <item>
+                                    <layout class="QHBoxLayout" name="smartFilterControlsLayout">
+                                        <item>
+                                            <widget class="QLabel" name="filterMaxCalLabel">
+                                                <property name="text">
+                                                    <string>Max Calories (0 = any):</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QSpinBox" name="filterMaxCaloriesSpinBox">
+                                                <property name="maximum">
+                                                    <number>5000</number>
+                                                </property>
+                                                <property name="singleStep">
+                                                    <number>50</number>
+                                                </property>
+                                                <property name="suffix">
+                                                    <string> kcal</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="filterMaxTimeLabel">
+                                                <property name="text">
+                                                    <string>Max Time (0 = any):</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QSpinBox" name="filterMaxTimeSpinBox">
+                                                <property name="maximum">
+                                                    <number>600</number>
+                                                </property>
+                                                <property name="singleStep">
+                                                    <number>5</number>
+                                                </property>
+                                                <property name="suffix">
+                                                    <string> mins</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QLabel" name="filterIngredientLabel">
+                                                <property name="text">
+                                                    <string>Ingredient:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QLineEdit" name="filterIngredientLineEdit">
+                                                <property name="placeholderText">
+                                                    <string>e.g. Milk, Eggs...</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="applySmartFilterButton">
+                                                <property name="text">
+                                                    <string>🔍 Apply Filter</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item>
+                                            <widget class="QPushButton" name="resetSmartFilterButton">
+                                                <property name="text">
+                                                    <string>🔄 Reset</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </item>
+                                <item>
+                                    <layout class="QHBoxLayout" name="smartFilterContentLayout">
+                                        <item>
+                                            <widget class="QListWidget" name="filteredRecipesListWidget"/>
+                                        </item>
+                                        <item>
+                                            <layout class="QVBoxLayout" name="smartFilterRightLayout">
+                                                <item>
+                                                    <widget class="QTextEdit" name="filteredRecipeDetailsTextEdit">
+                                                        <property name="readOnly">
+                                                            <bool>true</bool>
+                                                        </property>
+                                                        <property name="placeholderText">
+                                                            <string>Set filter criteria above and select a recipe to view details...</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item>
+                                                    <layout class="QHBoxLayout" name="quickScheduleLayout">
+                                                        <item>
+                                                            <widget class="QComboBox" name="quickScheduleDayComboBox"/>
+                                                        </item>
+                                                        <item>
+                                                            <widget class="QTimeEdit" name="quickScheduleTimeEdit">
+                                                                <property name="displayFormat">
+                                                                    <string>HH:mm</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item>
+                                                            <widget class="QPushButton" name="quickAddToMealPlanButton">
+                                                                <property name="text">
+                                                                    <string>📅 Add to Meal Planner</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                    </layout>
+                                                </item>
+                                            </layout>
                                         </item>
                                     </layout>
                                 </item>
