@@ -3,6 +3,8 @@
 #include "core/SolidIngredient.h"
 #include "core/LiquidIngredient.h"
 #include "core/CountableIngredient.h"
+#include "core/RecipeMatcher.h"
+#include "core/ShoppingList.h"
 
 TEST(InventoryTest, InitialStateIsEmpty) {
     core::Inventory inventory;
@@ -136,4 +138,42 @@ TEST(InventoryTest, ConsumeRecipeRespectsUnitAndCase) {
 
     EXPECT_FALSE(inventory.consumeRecipe(omelette));
     EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Eggs", "ml"), 500.0);
+}
+
+TEST(InventoryTest, ExpiredIngredientsIgnoredInMatchingAndShoppingList) {
+    core::Inventory inventory;
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-01-01"));
+
+    core::Recipe milkRecipe("Warm Milk", 5, 150.0, "Heat milk.");
+    milkRecipe.addRequirement("Milk", 500.0, "ml");
+
+    std::string currentDate = "2026-11-13";
+
+    EXPECT_FALSE(core::RecipeMatcher::canPrepare(milkRecipe, inventory, currentDate));
+    EXPECT_FALSE(inventory.consumeRecipe(milkRecipe, currentDate));
+
+    core::ShoppingList shoppingList;
+    shoppingList.generateForRecipe(milkRecipe, inventory, currentDate);
+
+    ASSERT_EQ(shoppingList.getItems().size(), 1);
+    EXPECT_EQ(shoppingList.getItems()[0].name, "Milk");
+    EXPECT_DOUBLE_EQ(shoppingList.getItems()[0].amountToBuy, 500.0);
+}
+
+TEST(InventoryTest, ConsumeRecipeUsesEarliestExpiringAndSkipsExpired) {
+    core::Inventory inventory;
+
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 500.0, "2026-12-30"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 300.0, "2026-11-15"));
+    inventory.addIngredient(std::make_unique<core::LiquidIngredient>("Milk", 1000.0, "2026-01-01"));
+
+    core::Recipe milkRecipe("Warm Milk", 5, 150.0, "Heat milk.");
+    milkRecipe.addRequirement("Milk", 300.0, "ml");
+
+    std::string currentDate = "2026-11-13";
+
+    ASSERT_TRUE(inventory.consumeRecipe(milkRecipe, currentDate));
+
+    ASSERT_EQ(inventory.getItemsCount(), 2);
+    EXPECT_DOUBLE_EQ(inventory.getIngredientAmount("Milk", "ml", currentDate), 500.0);
 }

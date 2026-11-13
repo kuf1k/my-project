@@ -149,6 +149,9 @@ namespace core {
         double total = 0.0;
         for (const auto &item: items) {
             if (toLower(item->getName()) == targetName && item->getUnit() == unit) {
+                if (!currentDate.empty() && item->getFreshnessStatus(currentDate) == FreshnessStatus::Expired) {
+                    continue;
+                }
                 total += item->getAmount();
             }
         }
@@ -156,7 +159,7 @@ namespace core {
     }
 
     bool Inventory::consumeRecipe(const Recipe &recipe, const std::string &currentDate) {
-        if (!RecipeMatcher::canPrepare(recipe, *this)) {
+        if (!RecipeMatcher::canPrepare(recipe, *this, currentDate)) {
             return false;
         }
 
