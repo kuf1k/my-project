@@ -375,14 +375,14 @@ int main(int argc, char *argv[]) {
         "QPushButton:hover { background-color: #3e3e3e; border-color: #555555; }"
         "QPushButton:pressed { background-color: #2a2a2a; }"
 
-        "#addIngredientButton, #cookRecipeButton, #addRecipeButton, #findRecipesButton, #addMealPlanButton, #generateShoppingListButton {"
+        "#addIngredientButton, #cookRecipeButton, #addRecipeButton, #findRecipesButton, #addMealPlanButton, #generateShoppingListButton, #generateWeeklyShoppingButton, #applySmartFilterButton, #quickAddToMealPlanButton {"
         "    background-color: #2b5b84;"
         "    border-color: #346c9e;"
         "}"
-        "#addIngredientButton:hover, #cookRecipeButton:hover, #addRecipeButton:hover, #findRecipesButton:hover, #generateShoppingListButton:hover, #addMealPlanButton:pressed, #generateWeeklyShoppingButton:pressed {"
+        "#addIngredientButton:hover, #cookRecipeButton:hover, #addRecipeButton:hover, #findRecipesButton:hover, #generateShoppingListButton:hover, #addMealPlanButton:hover, #generateWeeklyShoppingButton:hover, #applySmartFilterButton:hover, #quickAddToMealPlanButton:hover {"
         "    background-color: #346c9e;"
         "}"
-        "#addIngredientButton:pressed, #cookRecipeButton:pressed, #addRecipeButton:pressed, #findRecipesButton:pressed, #generateShoppingListButton:pressed, #addMealPlanButton:pressed, #generateWeeklyShoppingButton:pressed {"
+        "#addIngredientButton:pressed, #cookRecipeButton:pressed, #addRecipeButton:pressed, #findRecipesButton:pressed, #generateShoppingListButton:pressed, #addMealPlanButton:pressed, #generateWeeklyShoppingButton:pressed, #applySmartFilterButton:pressed, #quickAddToMealPlanButton:pressed {"
         "    background-color: #23496c;"
         "}"
 
