@@ -69,6 +69,8 @@ private slots:
 
     void onQuickAddToMealPlanClicked();
 
+    void onRefreshStatisticsClicked();
+
 private:
     Ui::MainWindow *ui;
     core::Inventory inventory;
@@ -97,6 +99,8 @@ private:
     void updateShoppingRecipeComboBox();
 
     void updateMealPlanTable();
+
+    void updateStatisticsTab();
 
     void displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit);
 

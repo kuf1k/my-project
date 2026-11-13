@@ -6,6 +6,7 @@
 #include "core/DateUtils.h"
 #include "core/FileExporter.h"
 #include "core/DataFilter.h"
+#include "core/RecipeMatcher.h"
 #include <QHeaderView>
 #include <QColor>
 #include <QMessageBox>
@@ -17,6 +18,7 @@
 #include <QDate>
 #include <QTime>
 #include <QMap>
+#include <QSet>
 #include <spdlog/spdlog.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -61,6 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
             &MainWindow::onFilteredRecipeSelectionChanged);
     connect(ui->quickAddToMealPlanButton, &QPushButton::clicked, this, &MainWindow::onQuickAddToMealPlanClicked);
 
+    connect(ui->refreshStatisticsButton, &QPushButton::clicked, this, &MainWindow::onRefreshStatisticsClicked);
+
     setupInventoryTable();
     setupShoppingTable();
     setupMealPlanTable();
@@ -70,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateShoppingRecipeComboBox();
     updateMealPlanTable();
     onApplySmartFilterClicked();
+    updateStatisticsTab();
 }
 
 MainWindow::~MainWindow() {
@@ -256,6 +261,145 @@ void MainWindow::updateMealPlanTable() {
     );
 }
 
+void MainWindow::updateStatisticsTab() {
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
+    const auto &items = inventory.getItems();
+
+    size_t solidCount = 0, liquidCount = 0, countableCount = 0;
+    double totalSolidWeight = 0.0, totalLiquidVolume = 0.0, totalCountableQty = 0.0;
+    size_t freshCount = 0, expiringSoonCount = 0, expiredCount = 0;
+
+    struct ExpiringItemInfo {
+        QString name;
+        double amount;
+        QString unit;
+        QString expDate;
+        int daysLeft;
+    };
+    QVector<ExpiringItemInfo> expiringItems;
+    QSet<QString> expiringNamesLower;
+
+    for (const auto &item : items) {
+        if (item->getUnit() == "g") {
+            solidCount++;
+            totalSolidWeight += item->getAmount();
+        } else if (item->getUnit() == "ml") {
+            liquidCount++;
+            totalLiquidVolume += item->getAmount();
+        } else if (item->getUnit() == "pcs") {
+            countableCount++;
+            totalCountableQty += item->getAmount();
+        }
+
+        int daysLeft = core::DateUtils::getDaysUntil(item->getExpirationDate(), currentDate);
+        if (daysLeft < 0) {
+            expiredCount++;
+        } else if (daysLeft <= 3) {
+            expiringSoonCount++;
+            QString qName = QString::fromStdString(item->getName());
+            expiringNamesLower.insert(qName.toLower());
+            expiringItems.push_back({
+                qName,
+                item->getAmount(),
+                QString::fromStdString(item->getUnit()),
+                QString::fromStdString(item->getExpirationDate()),
+                daysLeft
+            });
+        } else {
+            freshCount++;
+        }
+    }
+
+    const auto &recipes = recipeRepo.getRecipes();
+    size_t cookableNowCount = recipeRepo.getCookableRecipes(inventory, currentDate).size();
+    double avgCalories = 0.0;
+    if (!recipes.empty()) {
+        double sumCal = 0.0;
+        for (const auto &r : recipes) {
+            sumCal += r.getCalories();
+        }
+        avgCalories = sumCal / static_cast<double>(recipes.size());
+    }
+
+    QString leftHtml = "<h2>📊 Kitchen &amp; Pantry Analytics</h2>";
+    leftHtml += "<h3>🧊 Pantry Stock Breakdown</h3><ul>";
+    leftHtml += QString("<li><b>Total Stored Ingredients:</b> %1</li>").arg(items.size());
+    leftHtml += QString("<li><b>Solid Ingredients:</b> %1 item(s) (%2 g)</li>").arg(solidCount).arg(totalSolidWeight);
+    leftHtml += QString("<li><b>Liquid Ingredients:</b> %1 item(s) (%2 ml)</li>").arg(liquidCount).arg(totalLiquidVolume);
+    leftHtml += QString("<li><b>Countable Ingredients:</b> %1 item(s) (%2 pcs)</li>").arg(countableCount).arg(totalCountableQty);
+    leftHtml += "</ul>";
+
+    leftHtml += "<h3>🛡️ Freshness Status</h3><ul>";
+    leftHtml += QString("<li><span style='color:#66bb6a;'><b>Fresh (&gt; 3 days):</b></span> %1</li>").arg(freshCount);
+    leftHtml += QString("<li><span style='color:#ffca28;'><b>Expiring Soon (0–3 days):</b></span> %1</li>").arg(expiringSoonCount);
+    leftHtml += QString("<li><span style='color:#ef5350;'><b>Expired (&lt; 0 days):</b></span> %1</li>").arg(expiredCount);
+    leftHtml += "</ul>";
+
+    leftHtml += "<h3>📖 Recipes &amp; Weekly Plan</h3><ul>";
+    leftHtml += QString("<li><b>Recipes in Book:</b> %1 (Cookable right now: <b>%2</b>)</li>")
+            .arg(recipes.size()).arg(cookableNowCount);
+    leftHtml += QString("<li><b>Average Recipe Calories:</b> %1 kcal</li>")
+            .arg(QString::number(avgCalories, 'f', 0));
+    leftHtml += QString("<li><b>Scheduled Meals This Week:</b> %1 (%2 kcal total)</li>")
+            .arg(mealPlanner.getEntriesCount())
+            .arg(mealPlanner.getTotalCalories(recipeRepo));
+    leftHtml += "</ul>";
+
+    ui->pantryStatsTextEdit->setHtml(leftHtml);
+
+    QString rightHtml = "<h2>⚠️ Rescue Advisor</h2>";
+    if (expiringItems.isEmpty()) {
+        rightHtml += "<p style='color:#66bb6a;'><b>All good!</b> No ingredients are expiring within the next 3 days.</p>";
+    } else {
+        rightHtml += "<p>These ingredients will expire soon (still safe to cook with!):</p><ul>";
+        for (const auto &exp : expiringItems) {
+            QString badge = (exp.daysLeft == 0)
+                                ? "<span style='color:#ff7043;'><b>Expires TODAY!</b></span>"
+                                : QString("<span style='color:#ffca28;'>in %1 day(s)</span>").arg(exp.daysLeft);
+            rightHtml += QString("<li><b>%1</b> (%2 %3) — %4 (until %5)</li>")
+                    .arg(exp.name)
+                    .arg(exp.amount)
+                    .arg(exp.unit)
+                    .arg(badge)
+                    .arg(exp.expDate);
+        }
+        rightHtml += "</ul>";
+
+        auto rescueRecipes = core::DataFilter<core::Recipe>::filterBy(
+            recipes,
+            [&expiringNamesLower](const core::Recipe &recipe) {
+                return core::DataFilter<core::RecipeRequirement>::contains(
+                    recipe.getRequirements(),
+                    [&expiringNamesLower](const core::RecipeRequirement &req) {
+                        return expiringNamesLower.contains(QString::fromStdString(req.name).toLower());
+                    }
+                );
+            }
+        );
+
+        rightHtml += "<h3>🍳 Recommended Recipes to Save Food:</h3>";
+        if (rescueRecipes.empty()) {
+            rightHtml += "<p>No recipes in your book use these specific expiring ingredients yet.</p>";
+        } else {
+            rightHtml += "<ul>";
+            for (const auto &r : rescueRecipes) {
+                bool readyNow = core::RecipeMatcher::canPrepare(r, inventory, currentDate);
+                QString statusTag = readyNow
+                                        ? "<span style='color:#66bb6a;'>[Ready to Cook!]</span>"
+                                        : "<span style='color:#b0b0b0;'>[Missing some items]</span>";
+                rightHtml += QString("<li><b>%1</b> (%2 mins, %3 kcal) %4</li>")
+                        .arg(QString::fromStdString(r.getTitle()))
+                        .arg(r.getPrepTime())
+                        .arg(r.getCalories())
+                        .arg(statusTag);
+            }
+            rightHtml += "</ul>";
+        }
+    }
+
+    ui->expiringRescueTextEdit->setHtml(rightHtml);
+}
+
 void MainWindow::displayRecipeDetails(const core::Recipe &recipe, QTextEdit *targetTextEdit) {
     if (!targetTextEdit) return;
 
@@ -314,7 +458,8 @@ void MainWindow::onFindCookableRecipesClicked() {
     ui->cookableRecipesListWidget->clear();
     ui->cookableRecipeDetailsTextEdit->clear();
 
-    auto cookableRecipes = recipeRepo.getCookableRecipes(inventory);
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
+    auto cookableRecipes = recipeRepo.getCookableRecipes(inventory, currentDate);
 
     if (cookableRecipes.empty()) {
         spdlog::info("User checked cookable recipes: None available with current pantry items.");
@@ -370,15 +515,17 @@ void MainWindow::onCookRecipeClicked() {
 
     if (!targetRecipe) return;
 
-    if (inventory.consumeRecipe(*targetRecipe)) {
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
+    if (inventory.consumeRecipe(*targetRecipe, currentDate)) {
         spdlog::info("User cooked recipe: '{}'. Pantry ingredients deducted.", title);
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
         updateInventoryTable();
+        updateStatisticsTab();
 
         ui->cookableRecipesListWidget->clear();
         ui->cookableRecipeDetailsTextEdit->clear();
 
-        auto cookableRecipes = recipeRepo.getCookableRecipes(inventory);
+        auto cookableRecipes = recipeRepo.getCookableRecipes(inventory, currentDate);
         if (!cookableRecipes.empty()) {
             int currentIndex = ui->matcherSortComboBox->currentIndex();
             if (currentIndex < 0) currentIndex = 0;
@@ -421,6 +568,8 @@ void MainWindow::onAddRecipeClicked() {
 
         updateRecipesList();
         updateShoppingRecipeComboBox();
+        onApplySmartFilterClicked();
+        updateStatisticsTab();
 
         QMessageBox::information(this, "Success", "Custom recipe added successfully!");
     }
@@ -459,6 +608,7 @@ void MainWindow::onDeleteIngredientClicked() {
                      itemName.toStdString(), itemAmount, itemUnit.toStdString());
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
         updateInventoryTable();
+        updateStatisticsTab();
     }
 }
 
@@ -476,6 +626,7 @@ void MainWindow::onRemoveExpiredClicked() {
     spdlog::warn("User removed {} expired ingredient(s) from pantry.", removedCount);
     core::StorageManager::saveInventory(inventory, "inventory_save.json");
     updateInventoryTable();
+    updateStatisticsTab();
 
     QMessageBox::information(this, "Expired Removed",
                              QString("Successfully removed %1 expired ingredient(s) from your pantry.")
@@ -522,11 +673,12 @@ void MainWindow::onGenerateShoppingListClicked() {
     }
 
     std::string title = selectedTitle.toStdString();
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
     bool found = false;
 
     for (const auto &recipe: recipeRepo.getRecipes()) {
         if (recipe.getTitle() == title) {
-            shoppingList.generateForRecipe(recipe, inventory);
+            shoppingList.generateForRecipe(recipe, inventory, currentDate);
             found = true;
             break;
         }
@@ -598,6 +750,7 @@ void MainWindow::onAddMealPlanClicked() {
     mealPlanner.addMeal(day.toStdString(), time.toStdString(), recipeTitle.toStdString());
     core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
     updateMealPlanTable();
+    updateStatisticsTab();
 
     spdlog::info("Scheduled meal '{}' on {} at {}", recipeTitle.toStdString(), day.toStdString(), time.toStdString());
 }
@@ -612,6 +765,7 @@ void MainWindow::onRemoveMealPlanClicked() {
     if (mealPlanner.removeMealAt(static_cast<size_t>(selectedRow))) {
         core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
         updateMealPlanTable();
+        updateStatisticsTab();
         spdlog::info("Removed scheduled meal at row {}", selectedRow);
     }
 }
@@ -632,6 +786,7 @@ void MainWindow::onClearMealPlanClicked() {
         mealPlanner.clear();
         core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
         updateMealPlanTable();
+        updateStatisticsTab();
         spdlog::info("User cleared the weekly meal schedule.");
     }
 }
@@ -644,7 +799,8 @@ void MainWindow::onGenerateWeeklyShoppingClicked() {
         return;
     }
 
-    shoppingList.generateForRecipes(plannedRecipes, inventory);
+    std::string currentDate = QDate::currentDate().toString("yyyy-MM-dd").toStdString();
+    shoppingList.generateForRecipes(plannedRecipes, inventory, currentDate);
 
     ui->shoppingTableWidget->setRowCount(0);
     const auto &items = shoppingList.getItems();
@@ -749,6 +905,7 @@ void MainWindow::onQuickAddToMealPlanClicked() {
     mealPlanner.addMeal(day.toStdString(), time.toStdString(), recipeTitle.toStdString());
     core::StorageManager::saveMealPlan(mealPlanner, "meal_plan_save.json");
     updateMealPlanTable();
+    updateStatisticsTab();
 
     spdlog::info("Quick-scheduled filtered recipe '{}' on {} at {}",
                  recipeTitle.toStdString(), day.toStdString(), time.toStdString());
@@ -756,6 +913,11 @@ void MainWindow::onQuickAddToMealPlanClicked() {
     QMessageBox::information(this, "Added to Schedule",
                              QString("'%1' scheduled for %2 at %3!")
                              .arg(recipeTitle, displayDay, time));
+}
+
+void MainWindow::onRefreshStatisticsClicked() {
+    updateStatisticsTab();
+    spdlog::info("User manually refreshed kitchen statistics & analytics.");
 }
 
 void MainWindow::onRecipesSortChanged(int index) {
@@ -776,6 +938,7 @@ void MainWindow::onRefreshInventoryClicked() {
     updateShoppingRecipeComboBox();
     updateMealPlanTable();
     onApplySmartFilterClicked();
+    updateStatisticsTab();
 }
 
 void MainWindow::onAddIngredientClicked() {
@@ -788,6 +951,7 @@ void MainWindow::onAddIngredientClicked() {
             inventory.addIngredient(std::move(newIngredient));
             core::StorageManager::saveInventory(inventory, "inventory_save.json");
             updateInventoryTable();
+            updateStatisticsTab();
             QMessageBox::information(this, "Success", "Ingredient added successfully!");
         }
     }
