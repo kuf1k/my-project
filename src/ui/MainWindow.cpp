@@ -651,7 +651,7 @@ void MainWindow::updateStatisticsTab() {
                 } else {
                     statusTag = readyNow
                                     ? "<span style='color:#66bb6a;'>[Ready to Cook!]</span>"
-                                    : "<span style='color:#b0b0b0;'>[Missing some items]</span>";
+                                    : "<span style='color:#b0b0b0;'>[Missing some ingredients]</span>";
                     rightHtml += QString("<li><b>%1</b> (%2 mins, %3 kcal) %4</li>")
                             .arg(displayTitle)
                             .arg(r.getPrepTime())
@@ -909,9 +909,10 @@ void MainWindow::onDeleteIngredientClicked() {
     }
 
     QString rawName = QString::fromStdString(items[selectedRow]->getName());
+    std::string rawUnit = items[selectedRow]->getUnit();
     QString itemName = tm.translateIngredient(rawName);
     double itemAmount = items[selectedRow]->getAmount();
-    QString itemUnit = tm.translateUnit(QString::fromStdString(items[selectedRow]->getUnit()));
+    QString itemUnit = tm.translateUnit(QString::fromStdString(rawUnit));
 
     auto reply = QMessageBox::question(
         this,
@@ -928,7 +929,7 @@ void MainWindow::onDeleteIngredientClicked() {
 
     if (inventory.removeIngredientAt(static_cast<size_t>(selectedRow))) {
         spdlog::info("User deleted ingredient: '{}' ({:.1f} {})",
-                     rawName.toStdString(), itemAmount, items[selectedRow]->getUnit());
+                     rawName.toStdString(), itemAmount, rawUnit);
         core::StorageManager::saveInventory(inventory, "inventory_save.json");
         updateInventoryTable();
         updateStatisticsTab();

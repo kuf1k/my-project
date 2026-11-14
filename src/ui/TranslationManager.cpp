@@ -5,8 +5,8 @@ TranslationManager::TranslationManager() {
     ukTexts["app_title"] = "🥗 NutriMesh — Розумний кухонний помічник";
     enTexts["app_title"] = "🥗 NutriMesh — Smart Kitchen Assistant";
 
-    ukTexts["tab_pantry"] = "🧊 Комора та Холодильник";
-    enTexts["tab_pantry"] = "🧊 Pantry & Fridge";
+    ukTexts["tab_pantry"] = "🧊 Комора && Холодильник";
+    enTexts["tab_pantry"] = "🧊 Pantry && Fridge";
 
     ukTexts["tab_matcher"] = "🍳 Що Я можу приготувати?";
     enTexts["tab_matcher"] = "🍳 What Can I Cook?";

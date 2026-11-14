@@ -32,7 +32,7 @@ AddIngredientDialog::AddIngredientDialog(QWidget *parent)
 
     ui->typeComboBox->addItem(isUk ? "Твердий / сипучий (г)" : "Solid (g)", "Solid");
     ui->typeComboBox->addItem(isUk ? "Рідкий (мл)" : "Liquid (ml)", "Liquid");
-    ui->typeComboBox->addItem(isUk ? "Штучний (шт.)" : "Countable (pcs)", "Countable");
+    ui->typeComboBox->addItem(isUk ? "Поштучний (шт.)" : "Countable (pcs)", "Countable");
 
     QStringList knownNames;
     for (const auto &item: validator.getKnownIngredientNames()) {
