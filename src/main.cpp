@@ -331,6 +331,7 @@ int main() {
 */
 
 #include <QApplication>
+#include <QIcon>
 #include "ui/MainWindow.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -356,6 +357,7 @@ void initLogger() {
 int main(int argc, char *argv[]) {
     initLogger();
     QApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/assets/logo.png"));
 
 
     app.setStyleSheet(
