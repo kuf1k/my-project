@@ -536,9 +536,9 @@ void MainWindow::updateStatisticsTab() {
 
     if (isUk) {
         leftHtml += QString("<li><b>Усього інгредієнтів на зберіганні:</b> %1</li>").arg(items.size());
-        leftHtml += QString("<li><b>Сипучі / тверді:</b> %1 поз. (%2 г)</li>").arg(solidCount).arg(totalSolidWeight);
-        leftHtml += QString("<li><b>Рідкі:</b> %1 поз. (%2 мл)</li>").arg(liquidCount).arg(totalLiquidVolume);
-        leftHtml += QString("<li><b>Штучні:</b> %1 поз. (%2 шт.)</li>").arg(countableCount).arg(totalCountableQty);
+        leftHtml += QString("<li><b>Сипучі / тверді:</b> %1 інгредієнтів (%2 г)</li>").arg(solidCount).arg(totalSolidWeight);
+        leftHtml += QString("<li><b>Рідкі:</b> %1 інгредієнтів (%2 мл)</li>").arg(liquidCount).arg(totalLiquidVolume);
+        leftHtml += QString("<li><b>Поштучні:</b> %1 інгредієнтів (%2 шт.)</li>").arg(countableCount).arg(totalCountableQty);
         leftHtml += "</ul><h3>🛡️ Стан свіжості</h3><ul>";
         leftHtml += QString("<li><span style='color:#66bb6a;'><b>Свіжі (&gt; 3 дн.):</b></span> %1</li>").
                 arg(freshCount);
